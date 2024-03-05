@@ -22,15 +22,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     return desc;
   };
 
-  const [priceData, locData, enrolmentLocData] = await Promise.all([
+  const [priceDataResponse, locDataResponse, enrolmentLocDataResponse] = await Promise.all([
     fetchData(endpoints.PriceList),
     fetchData(endpoints.Locations),
     fetchData(endpoints.EnrolmentLocations)
   ]);
+  
+  // Correctly accessing nested data
+  const locData = locDataResponse.data;
+  const enrolmentLocData = enrolmentLocDataResponse.data;
+  const priceData = priceDataResponse.data;
 
-  console.log({ locData, enrolmentLocData, priceData });
-
-  const locMap = enrolmentLocData.data.marketingEnrolmentLocations.reduce((acc, loc) => {
+  const locMap = enrolmentLocData.marketingEnrolmentLocations.reduce((acc, loc) => {
     acc[loc.id] = loc.name;
     return acc;
   }, {});
