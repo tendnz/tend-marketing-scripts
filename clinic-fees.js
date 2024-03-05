@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-  const desiredLocationId = "{{wf {&quot;path&quot;:&quot;location-id&quot;,&quot;type&quot;:&quot;PlainText&quot;\} }}";
-
   const endpoints = {
     "Dev": "https://api.dev.projectxyz.nz/marketing/graphql",
     "Prod": "https://api.tend.nz/marketing/graphql"
