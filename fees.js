@@ -40,12 +40,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return regionName.replace(/_/g, ' ');
   }
 
-  const clinicToRegionMap = locData.marketingLocations.reduce((acc, loc) => {
+  const clinicToRegionMap = locData.data.marketingLocations.reduce((acc, loc) => {
     acc[loc.id] = formatRegionName(loc.region);
     return acc;
   }, {});
 
-  const locMap = enrolmentLocData.marketingEnrolmentLocations.reduce((acc, loc) => {
+  const locMap = enrolmentLocData.data.marketingEnrolmentLocations.reduce((acc, loc) => {
     acc[loc.id] = `${loc.displayName} (${clinicToRegionMap[loc.clinicLocationId] || 'Unknown Region'})`;
     return acc;
   }, {});
@@ -179,8 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   };
 
-  const locationGroupedPriceData = priceData.marketingPriceList
-  .reduce((acc, item) => {
+  const locationGroupedPriceData = priceData.data.marketingPriceList.reduce((acc, item) => {
     item.enrolmentLocationIds.forEach(locId => {
       if(!acc[locId]) acc[locId] = [];
       acc[locId].push(item);
