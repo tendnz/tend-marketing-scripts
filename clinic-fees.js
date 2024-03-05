@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     fetchData(endpoints.EnrolmentLocations)
   ]);
 
+  console.log({ locData, enrolmentLocData, priceData });
+
   const locMap = enrolmentLocData.data.marketingEnrolmentLocations.reduce((acc, loc) => {
     acc[loc.id] = loc.name;
     return acc;
