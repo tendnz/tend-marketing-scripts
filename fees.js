@@ -9,9 +9,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fetchData = async (url) => {
     try {
       const res = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+      console.log("Fetched data from", url, res.data); // Check the fetched data
       return res.data;
     } catch (e) {
-      console.error("Error:", e);
+      console.error("Error fetching from", url, e);
+      return undefined; // Explicitly return undefined on error
     }
   };
 
@@ -31,6 +33,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     fetchData(endpoints.EnrolmentLocations),
     fetchData(endpoints.PriceList)
   ]);
+
+  console.log({ locData, enrolmentLocData, priceData }); // This should show the structure of each
 
   function formatRegionName(regionName) {
     return regionName.replace(/_/g, ' ');
@@ -84,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const dropdownEvent = new Event('DropdownPopulated');
   document.dispatchEvent(dropdownEvent);
-  
+
   const generateTable = (locId, items, tableName = '') => {
     const locName = locMap[locId];     
     if (!locName) {
