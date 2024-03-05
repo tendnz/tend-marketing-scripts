@@ -58,8 +58,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     'Adult65OrOver': '65+ yrs', 
     'NoRequirement': 'N/A'
   };
-  
-  const sortedEnrolmentLocations = enrolmentLocData.marketingEnrolmentLocations.sort((a, b) => {
+
+  // Correct access to the nested array before sorting
+  const sortedEnrolmentLocations = enrolmentLocData.data.marketingEnrolmentLocations.sort((a, b) => {
     if (a.displayName < b.displayName) return -1;
     if (a.displayName > b.displayName) return 1;
     return 0;
