@@ -1,0 +1,201 @@
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const endpoints = {
+      "Dev": "https://api.dev.projectxyz.nz/marketing/graphql",
+      "Prod": "https://api.tend.nz/marketing/graphql"
+    };
+    const gqlFetch = async (env, query) => {
+      try {
+        const res = await axios.post(endpoints[env], { query }, { headers: { 'Content-Type': 'application/json' } });
+        return res.data.data;
+      } catch (e) {
+        console.error("Error:", e);
+      }
+    };
+    const extractDesc = item => {
+      const desc = item.marketingDescription || item.description || "";
+      return desc;
+    };
+    const priceQuery = `
+    query MarketingPriceList {
+      marketingPriceList {
+        id, sku, name, marketingDescription, description, amountInCents, itemCategory, 
+        membershipRequirement, requiresCommunityServicesCard, 
+        ageRequirement, enrolmentLocationIds, marketingDuration
+      }
+    }
+    `;
+    const locQuery = `query MarketingLocations { marketingLocations { id, name, region } }`;
+    const enrolmentLocQuery = `
+    query MarketingEnrolmentLocations {
+      marketingEnrolmentLocations {
+        id
+        name
+        displayName
+        clinicLocationId
+        newEnrolmentsOpen
+      }
+    }
+    `;
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+    }
+    const [priceData, locData, enrolmentLocData] = await Promise.all([
+      gqlFetch("Prod", priceQuery),
+      gqlFetch("Prod", locQuery),
+      gqlFetch("Prod", enrolmentLocQuery)
+      ]);
+    function formatRegionName(regionName) {
+      return regionName.replace(/_/g, ' ');
+    }
+    const clinicToRegionMap = locData.marketingLocations.reduce((acc, loc) => {
+      acc[loc.id] = formatRegionName(loc.region);
+      return acc;
+    }, {});
+    const locMap = enrolmentLocData.marketingEnrolmentLocations.reduce((acc, loc) => {
+      acc[loc.id] = `${loc.displayName} (${clinicToRegionMap[loc.clinicLocationId] || 'Unknown Region'})`;
+      return acc;
+    }, {});
+
+    const ageMap = {
+      'ChildUnder14': 'Under 14 yrs',
+      'Youth14to17': '14-17 yrs', 
+      'Adult18to24': '18-24 yrs', 
+      'Adult25to64': '25-64 yrs', 
+      'Adult65OrOver': '65+ yrs', 
+      'NoRequirement': 'N/A'
+    };
+    
+    const sortedEnrolmentLocations = enrolmentLocData.marketingEnrolmentLocations.sort((a, b) => {
+      if (a.displayName < b.displayName) return -1;
+      if (a.displayName > b.displayName) return 1;
+      return 0;
+    });
+    const dropdown = document.querySelector('.list-items');
+    sortedEnrolmentLocations.forEach(loc => {
+      const listItem = document.createElement('div');
+      listItem.classList.add('item');
+      const checkboxField = document.createElement('div');
+      checkboxField.classList.add('checkbox-field');
+      const checkbox = document.createElement('input');
+      checkbox.classList.add('checkbox', 'our-fees-hidden');
+      checkbox.type = 'checkbox';
+      const itemText = document.createElement('div');
+      itemText.classList.add('item-text');
+      const rawRegion = clinicToRegionMap[loc.clinicLocationId] || 'unknown region';
+      const region = toTitleCase(rawRegion);
+      itemText.textContent = `${loc.displayName} (${region})`;
+      checkboxField.appendChild(checkbox);
+      checkboxField.appendChild(itemText);
+      listItem.appendChild(checkboxField);
+      listItem.dataset.locId = loc.id;
+      dropdown.appendChild(listItem);
+    });
+    const dropdownEvent = new Event('DropdownPopulated');
+    document.dispatchEvent(dropdownEvent);
+    const generateTable = (locId, items, tableName = '') => {
+      const locName = locMap[locId];     
+      if (!locName) {
+        console.error(`Error: locId ${locId} is not found in locMap. Please verify the data.`);
+      }
+      let isAgeSpecific = tableName === 'Consultations';
+      let availableGroups;
+      let containerId = '';
+      switch (tableName) {
+      case 'Consultations':
+        containerId = 'pricingTablesContainerEnrolled';
+        break;
+      case 'Services':
+        containerId = 'pricingTablesContainerService';
+        break;
+      case 'Consultations (Casual)':
+        containerId = 'pricingTablesContainerCasual';
+        break;
+      case 'Consultations (CSC)':
+        containerId = 'pricingTablesContainerCSC';
+        break;
+      default:
+        break;
+      }
+      if (isAgeSpecific) {
+        const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
+      } else {
+        availableGroups = ['AllAges'];
+      }
+      const groupedItems = items.reduce((acc, i) => {
+        const commonDesc = extractDesc(i);
+        const duration = i.marketingDuration ? i.marketingDuration.toString() : "null";
+        const key = `${commonDesc}:::${duration}`;
+        acc[key] = { ...(acc[key] || {}), [i.ageRequirement]: i };
+        return acc;
+      }, {});
+      const widthAutoClass = !isAgeSpecific ? 'width-auto' : '';
+      let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
+    // Header row
+      table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
+      table += `${availableGroups.map((age, index) => {
+        let additionalClasses = index === 0 ? 'start' : '';
+        additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
+        const displayAge = isAgeSpecific ? ageMap[age] : 'All Ages';
+        return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
+      }).join('')}</div>`;
+      const entries = Object.entries(groupedItems);
+      table += `${entries.map(([key, group], rowIndex) => {
+        const [description, duration] = key.split(':::');
+        const durationText = duration !== 'null' ? ` (${duration} mins)` : '';        const isLastRow = rowIndex === entries.length - 1;
+        const isFirstRow = rowIndex === 0;
+        const isOnlyRow = entries.length === 1;
+        const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
+        const cells = availableGroups.map((age, index) => {
+          let additionalClasses = '';
+          if (isFirstRow) additionalClasses += ' first';
+          if (index === 0) additionalClasses += ' start';
+          if (index === availableGroups.length - 1) additionalClasses += ' last';
+          if (isLastRow) additionalClasses += ' end';
+          if (isOnlyRow && index === 0) additionalClasses += ' first';
+          if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
+          const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
+          const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
+          return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
+        }).join('');
+        const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
+        return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
+      }).join('')}</div>`;
+      document.getElementById(containerId).insertAdjacentHTML('afterbegin', table); 
+      const widthAutoTables = document.querySelectorAll('.flex-table.width-auto');
+      widthAutoTables.forEach(table => {
+        let parentContainer = table.parentElement;
+        while (parentContainer && !parentContainer.classList.contains('our-fees-pricing-spacing')) {
+          parentContainer = parentContainer.parentElement;
+        }
+        if (parentContainer) {
+          parentContainer.classList.add('width-auto');
+        }
+      });
+    };
+    const locationGroupedPriceData = priceData.marketingPriceList
+    .reduce((acc, item) => {
+      item.enrolmentLocationIds.forEach(locId => {
+        if(!acc[locId]) acc[locId] = [];
+        acc[locId].push(item);
+      });
+      return acc;
+    }, {});
+    Object.entries(locationGroupedPriceData).forEach(([locId, items]) => {
+      const notCasualItems = items.filter(i => i.membershipRequirement !== "CASUAL");
+      const consultationItems = notCasualItems.filter(i => (i.itemCategory === "Consultation" || i.itemCategory === "RepeatPrescription") && i.requiresCommunityServicesCard === false && (i.membershipRequirement === "ENROLLED" || i.membershipRequirement === "NO_REQUIREMENT"));
+      const serviceItems = notCasualItems.filter(i => i.itemCategory === "Service" && (i.membershipRequirement === "ENROLLED" || i.membershipRequirement === "NO_REQUIREMENT"));
+      const casualItems = items.filter(i => i.membershipRequirement === "CASUAL" && i.itemCategory === "Consultation");
+      const cscEnrolledItems = items.filter(i => (i.membershipRequirement === "ENROLLED" || i.itemCategory === "RepeatPrescription") && i.requiresCommunityServicesCard === true);
+      if(consultationItems.length) generateTable(locId, consultationItems, "Consultations");
+      if(serviceItems.length) generateTable(locId, serviceItems, "Services");
+      if(casualItems.length) generateTable(locId, casualItems, "Consultations (Casual)");
+      if(cscEnrolledItems.length) generateTable(locId, cscEnrolledItems, "Consultations (CSC)");
+    });
+    const tablesEvent = new Event('TablesPopulated');
+    document.dispatchEvent(tablesEvent);
+  });
+</script>
