@@ -1,16 +1,19 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
   const endpoints = {
-    "Dev": "https://api.dev.projectxyz.nz/marketing/graphql",
-    "Prod": "https://api.tend.nz/marketing/graphql"
+    "Locations": "https://api.tend.nz/marketing/locations",
+    "EnrolmentLocations": "https://api.tend.nz/marketing/enrolment-locations",
+    "PriceList": "https://api.tend.nz/marketing/price-list"
   };
 
-  const gqlFetch = async (env, query) => {
+  const fetchData = async (url) => {
     try {
-      const res = await axios.post(endpoints[env], { query }, { headers: { 'Content-Type': 'application/json' } });
-      return res.data.data;
+      const res = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+      console.log("Fetched data from", url, res.data); // Check the fetched data
+      return res.data;
     } catch (e) {
-      console.error("Error:", e);
+      console.error("Error fetching from", url, e);
+      return undefined; // Explicitly return undefined on error
     }
   };
 
@@ -19,37 +22,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     return desc;
   };
 
-  const priceQuery = `
-    query MarketingPriceList {
-    marketingPriceList {
-      id, sku, name, marketingDescription, description, amountInCents,
-      itemCategory, membershipRequirement, requiresCommunityServicesCard, 
-      ageRequirement, enrolmentLocationIds, marketingDuration
-    }
-  }
-  `;
-
-  const locQuery = `query MarketingLocations { marketingLocations { id, name } }`;
-
-  const enrolmentLocQuery = `
-  query MarketingEnrolmentLocations {
-    marketingEnrolmentLocations {
-      id
-      name
-      displayName
-      clinicLocationId
-      newEnrolmentsOpen
-    }
-  }
-  `;
-
   const [priceData, locData, enrolmentLocData] = await Promise.all([
-    gqlFetch("Prod", priceQuery),
-    gqlFetch("Prod", locQuery),
-    gqlFetch("Prod", enrolmentLocQuery)
+    fetchData(endpoints.PriceList),
+    fetchData(endpoints.Locations),
+    fetchData(endpoints.EnrolmentLocations)
   ]);
 
-  const locMap = enrolmentLocData.marketingEnrolmentLocations.reduce((acc, loc) => {
+  const locMap = enrolmentLocData.data.marketingEnrolmentLocations.reduce((acc, loc) => {
     acc[loc.id] = loc.name;
     return acc;
   }, {});
