@@ -1,58 +1,46 @@
 document.addEventListener("DOMContentLoaded", async () => {
+
   const endpoints = {
-    "Dev": "https://api.dev.projectxyz.nz/marketing/graphql",
-    "Prod": "https://api.tend.nz/marketing/graphql"
+    "Locations": "https://api.tend.nz/marketing/locations",
+    "EnrolmentLocations": "https://api.tend.nz/marketing/enrolment-locations",
+    "PriceList": "https://api.tend.nz/marketing/price-list"
   };
-  const gqlFetch = async (env, query) => {
+
+  const fetchData = async (url) => {
     try {
-      const res = await axios.post(endpoints[env], { query }, { headers: { 'Content-Type': 'application/json' } });
-      return res.data.data;
+      const res = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+      return res.data;
     } catch (e) {
       console.error("Error:", e);
     }
   };
+
   const extractDesc = item => {
     const desc = item.marketingDescription || item.description || "";
     return desc;
   };
-  const priceQuery = `
-  query MarketingPriceList {
-    marketingPriceList {
-      id, sku, name, marketingDescription, description, amountInCents, itemCategory, 
-      membershipRequirement, requiresCommunityServicesCard, 
-      ageRequirement, enrolmentLocationIds, marketingDuration
-    }
-  }
-  `;
-  const locQuery = `query MarketingLocations { marketingLocations { id, name, region } }`;
-  const enrolmentLocQuery = `
-  query MarketingEnrolmentLocations {
-    marketingEnrolmentLocations {
-      id
-      name
-      displayName
-      clinicLocationId
-      newEnrolmentsOpen
-    }
-  }
-  `;
+
   function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
   }
-  const [priceData, locData, enrolmentLocData] = await Promise.all([
-    gqlFetch("Prod", priceQuery),
-    gqlFetch("Prod", locQuery),
-    gqlFetch("Prod", enrolmentLocQuery)
-    ]);
+
+  const [locData, enrolmentLocData, priceData] = await Promise.all([
+    fetchData(endpoints.Locations),
+    fetchData(endpoints.EnrolmentLocations),
+    fetchData(endpoints.PriceList)
+  ]);
+
   function formatRegionName(regionName) {
     return regionName.replace(/_/g, ' ');
   }
+
   const clinicToRegionMap = locData.marketingLocations.reduce((acc, loc) => {
     acc[loc.id] = formatRegionName(loc.region);
     return acc;
   }, {});
+
   const locMap = enrolmentLocData.marketingEnrolmentLocations.reduce((acc, loc) => {
     acc[loc.id] = `${loc.displayName} (${clinicToRegionMap[loc.clinicLocationId] || 'Unknown Region'})`;
     return acc;
@@ -72,6 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (a.displayName > b.displayName) return 1;
     return 0;
   });
+
   const dropdown = document.querySelector('.list-items');
   sortedEnrolmentLocations.forEach(loc => {
     const listItem = document.createElement('div');
@@ -92,8 +81,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     listItem.dataset.locId = loc.id;
     dropdown.appendChild(listItem);
   });
+
   const dropdownEvent = new Event('DropdownPopulated');
   document.dispatchEvent(dropdownEvent);
+  
   const generateTable = (locId, items, tableName = '') => {
     const locName = locMap[locId];     
     if (!locName) {
@@ -118,12 +109,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     default:
       break;
     }
+
     if (isAgeSpecific) {
       const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
       availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
     } else {
       availableGroups = ['AllAges'];
     }
+
     const groupedItems = items.reduce((acc, i) => {
       const commonDesc = extractDesc(i);
       const duration = i.marketingDuration ? i.marketingDuration.toString() : "null";
@@ -131,9 +124,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       acc[key] = { ...(acc[key] || {}), [i.ageRequirement]: i };
       return acc;
     }, {});
+
     const widthAutoClass = !isAgeSpecific ? 'width-auto' : '';
+
     let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
-  // Header row
+    // Header row
     table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
     table += `${availableGroups.map((age, index) => {
       let additionalClasses = index === 0 ? 'start' : '';
@@ -163,8 +158,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
       return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
     }).join('')}</div>`;
-    document.getElementById(containerId).insertAdjacentHTML('afterbegin', table); 
+
+    document.getElementById(containerId).insertAdjacentHTML('afterbegin', table);
+
     const widthAutoTables = document.querySelectorAll('.flex-table.width-auto');
+
     widthAutoTables.forEach(table => {
       let parentContainer = table.parentElement;
       while (parentContainer && !parentContainer.classList.contains('our-fees-pricing-spacing')) {
@@ -174,7 +172,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         parentContainer.classList.add('width-auto');
       }
     });
+
   };
+
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
     item.enrolmentLocationIds.forEach(locId => {
@@ -183,6 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     return acc;
   }, {});
+
   Object.entries(locationGroupedPriceData).forEach(([locId, items]) => {
     const notCasualItems = items.filter(i => i.membershipRequirement !== "CASUAL");
     const consultationItems = notCasualItems.filter(i => (i.itemCategory === "Consultation" || i.itemCategory === "RepeatPrescription") && i.requiresCommunityServicesCard === false && (i.membershipRequirement === "ENROLLED" || i.membershipRequirement === "NO_REQUIREMENT"));
@@ -194,6 +195,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(casualItems.length) generateTable(locId, casualItems, "Consultations (Casual)");
     if(cscEnrolledItems.length) generateTable(locId, cscEnrolledItems, "Consultations (CSC)");
   });
+
   const tablesEvent = new Event('TablesPopulated');
+
   document.dispatchEvent(tablesEvent);
+
 });
