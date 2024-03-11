@@ -144,20 +144,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
     // Header row
     table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
-    /* table += `${availableGroups.map((age, index) => {
-      let additionalClasses = index === 0 ? 'start' : '';
-      additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
-      const displayAge = isAgeSpecific ? ageMap[age] : 'All Ages';
-      return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
-    }).join('')}</div>`;*/
-
     table += `${availableGroups.map((age, index) => {
       let additionalClasses = index === 0 ? 'start' : '';
       additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
-      // Handle "NoRequirement" specially for CSC table to display as "18+ yrs"
-      const displayAge = (tableName === 'Consultations (CSC)' && age === 'NoRequirement') ? '18+ yrs' : ageMap[age];
+
+      // Determine display text based on the age group and table name
+      let displayAge;
+      if (age === 'AllAges') {
+        displayAge = 'All Ages'; // Direct handling for non-age-specific tables
+      } else if (tableName === 'Consultations (CSC)' && age === 'NoRequirement') {
+        displayAge = '18+ yrs'; // Special case for CSC table with "NoRequirement"
+      } else {
+        displayAge = ageMap[age]; // Standard case using ageMap
+      }
+
       return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
     }).join('')}</div>`;
+      
 
     const entries = Object.entries(groupedItems);
     table += `${entries.map(([key, group], rowIndex) => {
