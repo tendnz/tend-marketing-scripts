@@ -91,42 +91,43 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.dispatchEvent(dropdownEvent);
 
   const generateTable = (locId, items, tableName = '') => {
-    const locName = locMap[locId];     
+    const locName = locMap[locId];
     if (!locName) {
       console.error(`Error: locId ${locId} is not found in locMap. Please verify the data.`);
     }
-    let isAgeSpecific = tableName === 'Consultations';
+    let isAgeSpecific = tableName === 'Consultations' || tableName === 'Consultations (CSC)';
     let availableGroups;
     let containerId = '';
     switch (tableName) {
-    case 'Consultations':
-      containerId = 'pricingTablesContainerEnrolled';
-      break;
-    case 'Services':
-      containerId = 'pricingTablesContainerService';
-      break;
-    case 'Consultations (Casual)':
-      containerId = 'pricingTablesContainerCasual';
-      break;
-    case 'Consultations (CSC)':
-      containerId = 'pricingTablesContainerCSC';
-      break;
-    default:
-      break;
-    }
-
-    if (isAgeSpecific) {
-      const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
-      availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
-    } else {
-      availableGroups = ['AllAges'];
+      case 'Consultations':
+        containerId = 'pricingTablesContainerEnrolled';
+        break;
+      case 'Services':
+        containerId = 'pricingTablesContainerService';
+        break;
+      case 'Consultations (Casual)':
+        containerId = 'pricingTablesContainerCasual';
+        break;
+      case 'Consultations (CSC)':
+        containerId = 'pricingTablesContainerCSC';
+        availableGroups = ['Youth14to17', 'Adult18OrOver'];
+        break;
+      default:
+        break;
     }
 
     const groupedItems = items.reduce((acc, i) => {
       const commonDesc = extractDesc(i);
       const duration = i.marketingDuration ? i.marketingDuration.toString() : "null";
       const key = `${commonDesc}:::${duration}`;
-      acc[key] = { ...(acc[key] || {}), [i.ageRequirement]: i };
+      const ageGroup = i.ageRequirement === 'Youth14to17' ? 'Youth14to17' : 'Adult18OrOver';
+      if (!acc[key]) {
+        acc[key] = {};
+      }
+      if (!acc[key][ageGroup]) {
+        acc[key][ageGroup] = [];
+      }
+      acc[key][ageGroup].push(i);
       return acc;
     }, {});
 
@@ -134,35 +135,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
     // Header row
-    table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
-    table += `${availableGroups.map((age, index) => {
-      let additionalClasses = index === 0 ? 'start' : '';
-      additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
-      const displayAge = isAgeSpecific ? ageMap[age] : 'All Ages';
-      return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
-    }).join('')}</div>`;
-    const entries = Object.entries(groupedItems);
-    table += `${entries.map(([key, group], rowIndex) => {
-      const [description, duration] = key.split(':::');
-      const durationText = duration !== 'null' ? ` (${duration} mins)` : '';        const isLastRow = rowIndex === entries.length - 1;
-      const isFirstRow = rowIndex === 0;
-      const isOnlyRow = entries.length === 1;
-      const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
-      const cells = availableGroups.map((age, index) => {
-        let additionalClasses = '';
-        if (isFirstRow) additionalClasses += ' first';
-        if (index === 0) additionalClasses += ' start';
-        if (index === availableGroups.length - 1) additionalClasses += ' last';
-        if (isLastRow) additionalClasses += ' end';
-        if (isOnlyRow && index === 0) additionalClasses += ' first';
-        if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
-        const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
-        const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
-        return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
-      }).join('');
-      const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
-      return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
-    }).join('')}</div>`;
+    if (tableName === 'Consultations (CSC)') {
+      table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
+      table += `<div class="flex-cell header-age heading-style-h6 text-color-purple">14-17 yrs</div>`;
+      table += `<div class="flex-cell header-age heading-style-h6 text-color-purple rounded-top-right">18+ yrs</div></div>`;
+    } else {
+      table += `<div class="flex-row header"><div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
+      table += `${availableGroups.map((age, index) => {
+        let additionalClasses = index === 0 ? 'start' : '';
+        additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
+        const displayAge = isAgeSpecific ? ageMap[age] : 'All Ages';
+        return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
+      }).join('')}</div>`;
+      const entries = Object.entries(groupedItems);
+      table += `${entries.map(([key, group], rowIndex) => {
+        const [description, duration] = key.split(':::');
+        const durationText = duration !== 'null' ? ` (${duration} mins)` : '';        const isLastRow = rowIndex === entries.length - 1;
+        const isFirstRow = rowIndex === 0;
+        const isOnlyRow = entries.length === 1;
+        const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
+        const cells = availableGroups.map((age, index) => {
+          let additionalClasses = '';
+          if (isFirstRow) additionalClasses += ' first';
+          if (index === 0) additionalClasses += ' start';
+          if (index === availableGroups.length - 1) additionalClasses += ' last';
+          if (isLastRow) additionalClasses += ' end';
+          if (isOnlyRow && index === 0) additionalClasses += ' first';
+          if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
+          const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
+          const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
+          return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
+        }).join('');
+        const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
+        return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
+      }).join('')}</div>`;
+    }
 
     document.getElementById(containerId).insertAdjacentHTML('afterbegin', table);
 
