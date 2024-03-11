@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayAge = ageMap[age]; // Standard case using ageMap
       }
 
-      if (isCSC && (additionalClasses.includes('header-age') || (!additionalClasses.includes(' first') && additionalClasses.includes('price')))) {
+      if (isCSC && additionalClasses.includes('header-age')) {
         additionalClasses += ' csc-max-width';
       }
 
@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isOnlyRow && index === 0) additionalClasses += ' first';
         if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
 
-        if (isCSC && (additionalClasses.includes('header-age') || (!additionalClasses.includes(' first') && additionalClasses.includes('price')))) {
+        if (additionalClasses.includes('price')) {
             additionalClasses += ' csc-max-width';
         }
 
