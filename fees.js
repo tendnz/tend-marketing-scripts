@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         break;
       case 'Consultations (CSC)':
         containerId = 'pricingTablesContainerCSC';
-        availableGroups = ['Youth14to17', 'Adult18OrOver'];
+        availableGroups = ['Youth14to17', 'NoRequirement'];
         break;
       default:
         break;
