@@ -159,8 +159,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayAge = ageMap[age]; // Standard case using ageMap
       }
 
-      if (isCSC && additionalClasses.includes('header-age')) {
-        additionalClasses += ' csc-max-width';
+      if (isCSC) {
+          additionalClasses += ' csc-max-width';
       }
 
       return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isOnlyRow && index === 0) additionalClasses += ' first';
         if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
 
-        if (additionalClasses.includes('price')) {
+        if (isCSC) {
             additionalClasses += ' csc-max-width';
         }
 
