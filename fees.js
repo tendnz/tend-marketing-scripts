@@ -139,7 +139,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       return acc;
     }, {});
 
-    const widthAutoClass = !isAgeSpecific ? 'width-auto' : '';
+    let isCSC = tableName === 'Consultations (CSC)';
+    const widthAutoClass = !isAgeSpecific || isCSC ? 'width-auto' : '';
 
     let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
     // Header row
