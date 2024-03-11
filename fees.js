@@ -165,11 +165,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const entries = Object.entries(groupedItems);
     table += `${entries.map(([key, group], rowIndex) => {
+
       const [description, duration] = key.split(':::');
       const durationText = duration !== 'null' ? ` (${duration} mins)` : '';        const isLastRow = rowIndex === entries.length - 1;
       const isFirstRow = rowIndex === 0;
       const isOnlyRow = entries.length === 1;
       const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
+
       const cells = availableGroups.map((age, index) => {
         let additionalClasses = '';
         if (isFirstRow) additionalClasses += ' first';
@@ -178,10 +180,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isLastRow) additionalClasses += ' end';
         if (isOnlyRow && index === 0) additionalClasses += ' first';
         if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
+
+        // Only add .csc-max-width class if isCSC is true and 'first' is not part of additionalClasses
+        if (isCSC && !additionalClasses.includes(' first')) additionalClasses += ' csc-max-width';
+
         const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
         const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
         return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
       }).join('');
+
       const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
       return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
     }).join('')}</div>`;
