@@ -159,6 +159,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayAge = ageMap[age]; // Standard case using ageMap
       }
 
+      if (isCSC && (additionalClasses.includes('header-age') || (!additionalClasses.includes(' first') && additionalClasses.includes('price')))) {
+        additionalClasses += ' csc-max-width';
+      }
+
       return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
     }).join('')}</div>`;
       
@@ -181,8 +185,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isOnlyRow && index === 0) additionalClasses += ' first';
         if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
 
-        // Only add .csc-max-width class if isCSC is true and 'first' is not part of additionalClasses
-        if ((isCSC && !additionalClasses.includes(' first')) || ((isCSC && additionalClasses.includes('header-age')))) additionalClasses += ' csc-max-width';
+        if (isCSC && (additionalClasses.includes('header-age') || (!additionalClasses.includes(' first') && additionalClasses.includes('price')))) {
+            additionalClasses += ' csc-max-width';
+        }
 
         const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
         const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
