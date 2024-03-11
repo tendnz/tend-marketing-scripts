@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isLastRow && index === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
 
         // Only add .csc-max-width class if isCSC is true and 'first' is not part of additionalClasses
-        if (isCSC && !additionalClasses.includes(' first')) additionalClasses += ' csc-max-width';
+        if ((isCSC && !additionalClasses.includes(' first')) || ((isCSC && additionalClasses.includes('header-age')))) additionalClasses += ' csc-max-width';
 
         const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
         const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
