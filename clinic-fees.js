@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const isAgeSpecific = tableName === "Enrolled" || tableName === "Enrolled (CSC)";
 
+    const isCSC = tableName.includes("CSC");
+
     let availableGroups;
 
     if (isAgeSpecific) {
@@ -72,15 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       availableGroups = ['AllAges'];
     }
 
-   /*const groupedItems = items.reduce((acc, i) => {
-    const commonDesc = extractDesc(i);
-    const duration = i.marketingDuration ? i.marketingDuration.toString() : "null";
-    const key = `${commonDesc}:::${duration}`;
-    acc[key] = { ...(acc[key] || {}), [i.ageRequirement]: i };
-    return acc;
-  }, {});*/
-
-  const groupedItems = items.reduce((acc, item) => {
+    const groupedItems = items.reduce((acc, item) => {
     const commonDesc = extractDesc(item);
     const duration = item.marketingDuration ? item.marketingDuration.toString() : "null";
     const key = `${commonDesc}:::${duration}`;
@@ -118,6 +112,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       displayAge = ageMap[age]; // Standard case using ageMap
     }
 
+    if (isCSC) {
+      additionalClasses += ' csc-max-width';
+    }
+
     return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
   }).join('')}</div>`;
 
@@ -143,6 +141,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (isLastRow) additionalClasses += ' end';
       if (isOnlyRow && ageIndex === 0) additionalClasses += ' first';
       if (isLastRow && ageIndex === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
+
+      if (isCSC) {
+        additionalClasses += ' csc-max-width'; // Adding .csc-max-width for CSC tables
+      }
 
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
    }).join('');
