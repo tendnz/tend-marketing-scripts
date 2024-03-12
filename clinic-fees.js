@@ -56,15 +56,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const generateTable = (locId, items, tableName = '') => {
     const locName = locMap[locId] || "Online";
 
-    const isAgeSpecific = ["Enrolled", "CSC"].includes(tableName);
+    const isAgeSpecific = tableName.includes("Enrolled (CSC)") || tableName.includes("CSC"); // Adjust based on your naming convention
     let availableGroups;
 
     if (isAgeSpecific) {
-     const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
-     availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
-   } else {
-     availableGroups = ['AllAges'];
-   }
+      if (tableName.includes("CSC")) { // Assuming "Enrolled (CSC)" and any other CSC-related table names include "CSC"
+        availableGroups = ['Youth14to17', 'NoRequirement']; // Handle "NoRequirement" as "18+ yrs" for CSC tables
+      } else {
+        const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
+      }
+    } else {
+      availableGroups = ['AllAges'];
+    }
 
    const groupedItems = items.reduce((acc, i) => {
     const commonDesc = extractDesc(i);
@@ -82,11 +86,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   table += `<div class="flex-row header">`;
   table += `<div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
   table += `${availableGroups.map((age, index) => {
-  const displayAge = isAgeSpecific ? ageMap[age] : 'All Ages';
-		let additionalClasses = index === 0 ? "start" : ""; // <-- Updated naming to match "our-fees"
-		additionalClasses += index === availableGroups.length - 1 ? " rounded-top-right last" : "";
-		return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
-	}).join('')}</div>`;
+    let additionalClasses = index === 0 ? 'start' : '';
+    additionalClasses += index === availableGroups.length - 1 ? ' rounded-top-right last' : '';
+    
+    // Determine display text based on the age group and table name
+    let displayAge;
+    if (age === 'AllAges') {
+      displayAge = 'All Ages'; // Direct handling for non-age-specific tables
+    } else if (tableName.includes("CSC") && age === 'NoRequirement') {
+      displayAge = '18+ yrs'; // Special case for CSC table with "NoRequirement"
+    } else {
+      displayAge = ageMap[age]; // Standard case using ageMap
+    }
+
+    return `<div class="flex-cell header-age heading-style-h6 text-color-purple ${additionalClasses}">${displayAge}</div>`;
+  }).join('')}</div>`;
 
   const entries = Object.entries(groupedItems);
   table += `${entries.map(([key, group], rowIndex) => {
