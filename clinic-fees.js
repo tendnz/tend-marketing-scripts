@@ -56,7 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const generateTable = (locId, items, tableName = '') => {
     const locName = locMap[locId] || "Online";
 
-    const isAgeSpecific = tableName.includes("Enrolled (CSC)") || tableName.includes("CSC"); // Adjust based on your naming convention
+    const isAgeSpecific = tableName === "Enrolled" || tableName === "Enrolled (CSC)";
+
     let availableGroups;
 
     if (isAgeSpecific) {
