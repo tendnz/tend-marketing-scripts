@@ -61,21 +61,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     let availableGroups;
 
     if (isAgeSpecific) {
-      if (tableName.includes("CSC")) { // Assuming "Enrolled (CSC)" and any other CSC-related table names include "CSC"
-        availableGroups = ['Youth14to17', 'NoRequirement']; // Handle "NoRequirement" as "18+ yrs" for CSC tables
+      // Check if the table is for "Enrolled (CSC)" to apply specific logic for "CSC"
+      if (tableName.includes("CSC")) {
+        availableGroups = ['Youth14to17', 'NoRequirement'];
       } else {
         const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
-        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
+        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age));
       }
     } else {
       availableGroups = ['AllAges'];
     }
 
-   const groupedItems = items.reduce((acc, i) => {
+   /*const groupedItems = items.reduce((acc, i) => {
     const commonDesc = extractDesc(i);
     const duration = i.marketingDuration ? i.marketingDuration.toString() : "null";
     const key = `${commonDesc}:::${duration}`;
     acc[key] = { ...(acc[key] || {}), [i.ageRequirement]: i };
+    return acc;
+  }, {});*/
+
+  const groupedItems = items.reduce((acc, item) => {
+    const commonDesc = extractDesc(item);
+    const duration = item.marketingDuration ? item.marketingDuration.toString() : "null";
+    const key = `${commonDesc}:::${duration}`;
+    
+    if (item.ageRequirement === 'NoRequirement' && isAgeSpecific && !tableName.includes("CSC")) {
+      // For items with no specific age requirement, add them to each age group category
+      availableGroups.forEach(age => {
+        acc[key] = { ...(acc[key] || {}), [age]: item };
+      });
+    } else {
+      acc[key] = { ...(acc[key] || {}), [item.ageRequirement]: item };
+    }
+    
     return acc;
   }, {});
 
