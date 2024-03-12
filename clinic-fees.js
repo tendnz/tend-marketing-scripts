@@ -89,9 +89,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
     return acc;
-  }, {});
+    }, {});
 
-  const widthAutoClass = !isAgeSpecific ? 'width-auto' : '';
+  const widthAutoClass = !isAgeSpecific || isCSC ? 'width-auto' : '';
 
   let table = `<div class="flex-table ${widthAutoClass}">`;
 
