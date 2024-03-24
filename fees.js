@@ -52,10 +52,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const ageMap = {
     'ChildUnder14': 'Under 14 yrs',
-    'Youth14to17': '14-17 yrs', 
-    'Adult18to24': '18-24 yrs', 
-    'Adult25to64': '25-64 yrs', 
-    'Adult65OrOver': '65+ yrs', 
+    'Youth14to17': '14-17 yrs',
+    'Adult18to24': '18-24 yrs',
+    'Adult25to64': '25-64 yrs',
+    'Adult25OrOver': '25+ yrs',
+    'Adult65OrOver': '65+ yrs',
     'NoRequirement': 'N/A'
   };
 
@@ -119,13 +120,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (isAgeSpecific) {
-      if (tableName === 'Consultations (CSC)') {
-        // For CSC tables, map "Youth14to17" directly and handle "NoRequirement" specially
-        availableGroups = ['Youth14to17', 'NoRequirement']; // Use existing ageMap keys
+      if (tableName.includes("CSC")) {
+        availableGroups = ['Youth14to17', 'NoRequirement'];
       } else {
-        // Original logic for non-CSC, age-specific tables
-        const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
-        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age || i.ageRequirement === 'NoRequirement'));
+        // Determine if there are items specifically for 'Adult25to64' or 'Adult25OrOver'
+        const hasAdult25to64 = items.some(i => i.ageRequirement === 'Adult25to64');
+        const hasAdult25OrOver = items.some(i => i.ageRequirement === 'Adult25OrOver');
+
+        // Initially assume 'Adult25to64' is the relevant category
+        let ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+
+        // If there are no 'Adult25to64' items but there are 'Adult25OrOver' items, use 'Adult25OrOver' instead
+        if (!hasAdult25to64 && hasAdult25OrOver) {
+          ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25OrOver'];
+        }
+
+        // Filter available groups based on the presence of items for each age group
+        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age));
       }
     } else {
       availableGroups = ['AllAges'];
