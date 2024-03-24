@@ -143,20 +143,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
 
     const cells = availableGroups.map((age, ageIndex) => {
-      const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
-      const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
+      // First, check if we have a specific item for this age group.
+      let item = group[age];
 
-      let additionalClasses = '';
-      if (isFirstRow) additionalClasses += ' first';
-      if (ageIndex === 0) additionalClasses += ' start';
-      if (ageIndex === availableGroups.length - 1) additionalClasses += ' last';
-      if (isLastRow) additionalClasses += ' end';
-      if (isOnlyRow && ageIndex === 0) additionalClasses += ' first';
-      if (isLastRow && ageIndex === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
-
-      if (isCSC) {
-        additionalClasses += ' csc-max-width'; // Adding .csc-max-width for CSC tables
+      // If there's no specific item for this age group...
+      if (!item) {
+        // For CSC tables, always use the 'NoRequirement' item if available.
+        if (isCSC && group['NoRequirement']) {
+          item = group['NoRequirement'];
+        }
+        // For age-specific non-CSC tables, use 'NoRequirement' only if it's supposed to apply to all ages.
+        else if (isAgeSpecific && !isCSC && group['NoRequirement']) {
+          item = group['NoRequirement'];
+        }
+        // If it's not age-specific and there's no 'NoRequirement', use the first available item.
+        else {
+          item = Object.values(group)[0];
+        }
       }
+
+      // Now that we have the right item, determine the price.
+      const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
 
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
    }).join('');
