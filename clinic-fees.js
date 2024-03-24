@@ -165,8 +165,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Now that we have the right item, determine the price.
       const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
 
+      // Define additionalClasses here, within the map function
+      let additionalClasses = '';
+      if (isFirstRow) additionalClasses += ' first';
+      if (ageIndex === 0) additionalClasses += ' start';
+      if (ageIndex === availableGroups.length - 1) additionalClasses += ' last';
+      if (isLastRow) additionalClasses += ' end';
+      if (isOnlyRow && ageIndex === 0) additionalClasses += ' first';
+      if (isLastRow && ageIndex === availableGroups.length - 1) additionalClasses += ' rounded-bottom-right';
+
+      if (isCSC) {
+        additionalClasses += ' csc-max-width'; // Adding .csc-max-width for CSC tables
+      }
+
+      // Use additionalClasses to build the cell
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
-   }).join('');
+    }).join('');
 
     const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
 
