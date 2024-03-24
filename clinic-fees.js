@@ -143,28 +143,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
 
     const cells = availableGroups.map((age, ageIndex) => {
-      // First, check if we have a specific item for this age group.
-      let item = group[age];
-
-      // If there's no specific item for this age group...
-      if (!item) {
-        // For CSC tables, always use the 'NoRequirement' item if available.
-        if (isCSC && group['NoRequirement']) {
-          item = group['NoRequirement'];
-        }
-        // For age-specific non-CSC tables, use 'NoRequirement' only if it's supposed to apply to all ages.
-        else if (isAgeSpecific && !isCSC && group['NoRequirement']) {
-          item = group['NoRequirement'];
-        }
-        // If it's not age-specific and there's no 'NoRequirement', use the first available item.
-        else {
-          item = Object.values(group)[0];
-        }
-      }
-
-      // Now that we have the right item, determine the price.
-      const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
-
       // Define additionalClasses here, within the map function
       let additionalClasses = '';
       if (isFirstRow) additionalClasses += ' first';
@@ -177,6 +155,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (isCSC) {
         additionalClasses += ' csc-max-width'; // Adding .csc-max-width for CSC tables
       }
+
+      // Check if we have a specific item for this age group.
+      let item = group[age];
+
+      // If there's no specific item for this age group...
+      if (!item) {
+        // Use the 'NoRequirement' item if available.
+        item = group['NoRequirement'];
+      }
+
+      // Now that we have the right item, determine the price.
+      const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
 
       // Use additionalClasses to build the cell
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
