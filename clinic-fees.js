@@ -42,7 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
    'ChildUnder14': 'Under 14 yrs',
    'Youth14to17': '14-17 yrs', 
    'Adult18to24': '18-24 yrs', 
-   'Adult25to64': '25-64 yrs', 
+   'Adult25to64': '25-64 yrs',
+   'Adult25OrOver':'25+ yrs',
    'Adult65OrOver': '65+ yrs', 
    'NoRequirement': 'N/A'
   };
