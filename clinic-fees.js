@@ -64,11 +64,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     let availableGroups;
 
     if (isAgeSpecific) {
-      // Check if the table is for "Enrolled (CSC)" to apply specific logic for "CSC"
       if (tableName.includes("CSC")) {
         availableGroups = ['Youth14to17', 'NoRequirement'];
       } else {
-        const ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+        // Determine if there are items specifically for 'Adult25to64' or 'Adult25OrOver'
+        const hasAdult25to64 = items.some(i => i.ageRequirement === 'Adult25to64');
+        const hasAdult25OrOver = items.some(i => i.ageRequirement === 'Adult25OrOver');
+
+        // Initially assume 'Adult25to64' is the relevant category
+        let ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+
+        // If there are no 'Adult25to64' items but there are 'Adult25OrOver' items, use 'Adult25OrOver' instead
+        if (!hasAdult25to64 && hasAdult25OrOver) {
+          ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25OrOver'];
+        }
+
+        // Filter available groups based on the presence of items for each age group
         availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age));
       }
     } else {
