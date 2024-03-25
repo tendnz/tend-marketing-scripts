@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   Object.entries(desiredLocationData).forEach(([locId, items]) => {
     const categorizedData = categorizePriceList(items);
-    console.log(categorizeData);
+    console.log(categorizedData);
 
     if (categorizedData.enrolled.length) generateTable(locId, categorizedData.enrolled, "Enrolled");
     if (categorizedData.enrolledCsc.length) generateTable(locId, categorizedData.enrolledCsc, "Enrolled (CSC)");
