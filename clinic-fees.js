@@ -65,24 +65,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (isAgeSpecific) {
       const baseAgeGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24'];
-      const allAgeGroups = [...baseAgeGroups, 'Adult25to64', 'Adult65OrOver'];
+      let extendedAgeGroups = [];
 
-      // Determine the highest age group present among the items
-      const itemAgeGroups = items.map(item => item.ageRequirement).filter(age => age !== 'NoRequirement');
-      const highestAgeGroup = allAgeGroups.find(ageGroup => itemAgeGroups.includes(ageGroup));
+      // Check for the presence of each age group among items
+      const hasAdult25to64 = items.some(item => item.ageRequirement === 'Adult25to64');
+      const hasAdult65OrOver = items.some(item => item.ageRequirement === 'Adult65OrOver');
+      if (hasAdult25to64) extendedAgeGroups.push('Adult25to64');
+      if (hasAdult65OrOver) extendedAgeGroups.push('Adult65OrOver');
 
-      // Determine the index of the highest age group in the allAgeGroups array to know how many groups to include
-      const highestAgeGroupIndex = Math.max(allAgeGroups.indexOf(highestAgeGroup), baseAgeGroups.length - 1); // Ensure we include base groups
-
-      // Include all age groups up to the highest one required by the items
-      availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1);
-
-      // If 'NoRequirement' items are present, ensure they are shown in all groups
-      if (items.some(item => item.ageRequirement === 'NoRequirement')) {
-        availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1);
-      } else {
-        availableGroups = ['AllAges'];
+      // Ensure to include 'Adult25OrOver' if neither 'Adult25to64' nor 'Adult65OrOver' is explicitly required, but items for '25 or over' exist
+      const hasAdult25OrOver = items.some(item => item.ageRequirement === 'Adult25OrOver');
+      if (hasAdult25OrOver && !hasAdult25to64 && !hasAdult65OrOver) {
+        extendedAgeGroups.push('Adult25OrOver');
       }
+
+      availableGroups = baseAgeGroups.concat(extendedAgeGroups.length > 0 ? extendedAgeGroups : ['Adult25OrOver']); // Default to 'Adult25OrOver' if no specific group is needed
+
+      // Handle 'NoRequirement' items by ensuring they are included across all defined age groups
+    } else {
+      availableGroups = ['AllAges']; // This is correctly placed to handle non-age-specific tables
     }
 
     const groupedItems = items.reduce((acc, item) => {
