@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       // If 'NoRequirement' items are present, ensure they are shown in all groups
       if (items.some(item => item.ageRequirement === 'NoRequirement')) {
         availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1); // Adjust if necessary to ensure full coverage
-    }
     } else {
       availableGroups = ['AllAges'];
     }
