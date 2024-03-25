@@ -65,29 +65,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (isAgeSpecific) {
       const baseAgeGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24'];
-      let extendedAgeGroups = [];
+      const allPossibleGroups = ['Adult25to64', 'Adult65OrOver', 'Adult25OrOver']; // Include all possible groups beyond base
+      
+      // Filter out the groups based on item age requirements present
+      const relevantExtendedGroups = allPossibleGroups.filter(extGroup => 
+        items.some(item => item.ageRequirement === extGroup));
 
-      // Check for the presence of each age group among items
-      const hasAdult25to64 = items.some(item => item.ageRequirement === 'Adult25to64');
-      const hasAdult65OrOver = items.some(item => item.ageRequirement === 'Adult65OrOver');
-      if (hasAdult25to64) extendedAgeGroups.push('Adult25to64');
-      if (hasAdult65OrOver) extendedAgeGroups.push('Adult65OrOver');
+      // Special handling for 'Adult25OrOver'
+      const includesOver25 = relevantExtendedGroups.includes('Adult25to64') || relevantExtendedGroups.includes('Adult25OrOver');
+      const finalGroups = includesOver25 ? relevantExtendedGroups.filter(group => group !== 'Adult65OrOver') : relevantExtendedGroups;
 
-      // Ensure to include 'Adult25OrOver' if neither 'Adult25to64' nor 'Adult65OrOver' is explicitly required, but items for '25 or over' exist
-      const hasAdult25OrOver = items.some(item => item.ageRequirement === 'Adult25OrOver');
-      if (hasAdult25OrOver && !hasAdult25to64 && !hasAdult65OrOver) {
-        extendedAgeGroups.push('Adult25OrOver');
-      }
-
-      availableGroups = baseAgeGroups.concat(extendedAgeGroups.length > 0 ? extendedAgeGroups : ['Adult25OrOver']); // Default to 'Adult25OrOver' if no specific group is needed
-
-      // Handle 'NoRequirement' items by ensuring they are included across all defined age groups
+      availableGroups = baseAgeGroups.concat(finalGroups.length > 0 ? finalGroups : ['Adult25OrOver']);
     } else {
-      availableGroups = ['AllAges']; // This is correctly placed to handle non-age-specific tables
+      availableGroups = ['AllAges'];
     }
 
+    // Log the determined available groups for debugging
     console.log("Available age groups for table:", availableGroups);
-    console.log(`Items to be processed for location ${locId}:`, items);
+
     items.forEach(item => {
       console.log(`Processing item: ${item.name}, Age Requirement: ${item.ageRequirement}, Locations:`, item.enrolmentLocationIds);
     });
