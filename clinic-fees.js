@@ -165,10 +165,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           item = group['NoRequirement'];
       }
 
-      const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
-        const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
+      // Now that we have the right item, determine the price.
+      let price;
+      if (item) {
+        // If there's a specific item for this age group, use its price
+        price = item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`;
+      } else {
+        // If there's no specific item for this age group, try to find a "NoRequirement" item
+        const noRequirementItem = group['NoRequirement'];
+        price = noRequirementItem ? (noRequirementItem.amountInCents === 0 ? 'Free' : `$${noRequirementItem.amountInCents / 100}`) : 'N/A';
       }
-      //const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
 
       // Use additionalClasses to build the cell
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
