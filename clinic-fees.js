@@ -80,8 +80,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       // If 'NoRequirement' items are present, ensure they are shown in all groups
       if (items.some(item => item.ageRequirement === 'NoRequirement')) {
         availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1);
-    } else {
-      availableGroups = ['AllAges'];
+      } else {
+        availableGroups = ['AllAges'];
+      }
     }
 
     const groupedItems = items.reduce((acc, item) => {
@@ -218,4 +219,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (categorizedData.enrolledCsc.length) generateTable(locId, categorizedData.enrolledCsc, "Enrolled (CSC)");
     if (categorizedData.casual.length) generateTable(locId, categorizedData.casual, "Casual");
   });
-};
+});
