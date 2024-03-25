@@ -86,22 +86,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       availableGroups = ['AllAges']; // This is correctly placed to handle non-age-specific tables
     }
 
+    console.log("Available age groups for table:", availableGroups);
+    console.log(`Items to be processed for location ${locId}:`, items);
+    items.forEach(item => {
+      console.log(`Processing item: ${item.name}, Age Requirement: ${item.ageRequirement}, Locations:`, item.enrolmentLocationIds);
+    });
+
+
+
     const groupedItems = items.reduce((acc, item) => {
-    const commonDesc = extractDesc(item);
-    const duration = item.marketingDuration ? item.marketingDuration.toString() : "null";
-    const key = `${commonDesc}:::${duration}`;
-    
-    if (item.ageRequirement === 'NoRequirement' && isAgeSpecific && !tableName.includes("CSC")) {
-      // For items with no specific age requirement, add them to each age group category
-      availableGroups.forEach(age => {
-        acc[key] = { ...(acc[key] || {}), [age]: item };
-      });
-    } else {
-      acc[key] = { ...(acc[key] || {}), [item.ageRequirement]: item };
-    }
-    
-    return acc;
+      const commonDesc = extractDesc(item);
+      const duration = item.marketingDuration ? item.marketingDuration.toString() : "null";
+      const key = `${commonDesc}:::${duration}`;
+      
+      if (item.ageRequirement === 'NoRequirement' && isAgeSpecific && !tableName.includes("CSC")) {
+        // For items with no specific age requirement, add them to each age group category
+        availableGroups.forEach(age => {
+          acc[key] = { ...(acc[key] || {}), [age]: item };
+        });
+      } else {
+        acc[key] = { ...(acc[key] || {}), [item.ageRequirement]: item };
+      }
+      
+      return acc;
     }, {});
+
+    console.log(`Grouped items for location ${locId}:`, groupedItems);
 
   const widthAutoClass = !isAgeSpecific || isCSC ? 'width-auto' : '';
 
