@@ -87,19 +87,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`Processing item: ${item.name}, Age Requirement: ${item.ageRequirement}, Locations:`, item.enrolmentLocationIds);
     });
 
-
-
     const groupedItems = items.reduce((acc, item) => {
       const commonDesc = extractDesc(item);
       const duration = item.marketingDuration ? item.marketingDuration.toString() : "null";
       const key = `${commonDesc}:::${duration}`;
-      
+
+      // Check if the current item has a 'NoRequirement' age requirement.
       if (item.ageRequirement === 'NoRequirement' && isAgeSpecific && !tableName.includes("CSC")) {
-        // For items with no specific age requirement, add them to each age group category
+        // For items with no specific age requirement, add them to each age group category,
+        // but do not overwrite if a specific age item already exists for that age group.
         availableGroups.forEach(age => {
-          acc[key] = { ...(acc[key] || {}), [age]: item };
+          if (!acc[key] || !acc[key][age]) { // Only add if not already set by a specific age item
+            acc[key] = { ...(acc[key] || {}), [age]: item };
+          }
         });
       } else {
+        // For items with a specific age requirement, add/overwrite the item for that age group.
         acc[key] = { ...(acc[key] || {}), [item.ageRequirement]: item };
       }
       
