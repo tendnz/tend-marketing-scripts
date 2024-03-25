@@ -206,17 +206,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     const casual = [];
 
     for (let item of priceListData) {
-     if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      enrolled.push(item);
-    } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      enrolledCsc.push(item);
-    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
-      casual.push(item);
+        if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && 
+            !item.requiresCommunityServicesCard &&
+            (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+            enrolled.push(item);
+        } else if (item.membershipRequirement === "ENROLLED" && 
+                   item.requiresCommunityServicesCard && 
+                   (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+            enrolledCsc.push(item);
+        } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+            casual.push(item);
+        }
     }
+    
+    return { enrolled, enrolledCsc, casual };
   }
-
-  return { enrolled, enrolledCsc, casual };
-  };
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
