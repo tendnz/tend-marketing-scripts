@@ -64,24 +64,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     let availableGroups;
 
     if (isAgeSpecific) {
-      if (tableName.includes("CSC")) {
-        availableGroups = ['Youth14to17', 'NoRequirement'];
-      } else {
-        // Determine if there are items specifically for 'Adult25to64' or 'Adult25OrOver'
-        const hasAdult25to64 = items.some(i => i.ageRequirement === 'Adult25to64');
-        const hasAdult25OrOver = items.some(i => i.ageRequirement === 'Adult25OrOver');
+      const baseAgeGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24'];
+      const allAgeGroups = [...baseAgeGroups, 'Adult25to64', 'Adult65OrOver'];
 
-        // Initially assume 'Adult25to64' is the relevant category
-        let ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25to64', 'Adult65OrOver'];
+      // Determine the highest age group present among the items
+      const itemAgeGroups = items.map(item => item.ageRequirement).filter(age => age !== 'NoRequirement');
+      const highestAgeGroup = allAgeGroups.find(ageGroup => itemAgeGroups.includes(ageGroup));
 
-        // If there are no 'Adult25to64' items but there are 'Adult25OrOver' items, use 'Adult25OrOver' instead
-        if (!hasAdult25to64 && hasAdult25OrOver) {
-          ageGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24', 'Adult25OrOver'];
-        }
+      // Determine the index of the highest age group in the allAgeGroups array to know how many groups to include
+      const highestAgeGroupIndex = Math.max(allAgeGroups.indexOf(highestAgeGroup), baseAgeGroups.length - 1); // Ensure we include base groups
 
-        // Filter available groups based on the presence of items for each age group
-        availableGroups = ageGroups.filter(age => items.some(i => i.ageRequirement === age));
-      }
+      // Include all age groups up to the highest one required by the items
+      availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1);
+
+      // If 'NoRequirement' items are present, ensure they are shown in all groups
+      if (items.some(item => item.ageRequirement === 'NoRequirement')) {
+        availableGroups = allAgeGroups.slice(0, highestAgeGroupIndex + 1); // Adjust if necessary to ensure full coverage
+    }
     } else {
       availableGroups = ['AllAges'];
     }
@@ -107,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let table = `<div class="flex-table ${widthAutoClass}">`;
 
-	// Header 
+  // Header 
   table += `<div class="flex-row header">`;
   table += `<div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
   table += `${availableGroups.map((age, index) => {
@@ -143,7 +142,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const rowClass = isOnlyRow ? 'end first' : (isLastRow ? 'end' : (isFirstRow ? 'first' : ''));
 
     const cells = availableGroups.map((age, ageIndex) => {
-      // Define additionalClasses here, within the map function
+      const item = group[age] || (isAgeSpecific ? group['NoRequirement'] : Object.values(group)[0]);
+      const price = item ? (item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`) : 'N/A';
+
       let additionalClasses = '';
       if (isFirstRow) additionalClasses += ' first';
       if (ageIndex === 0) additionalClasses += ' start';
@@ -156,36 +157,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         additionalClasses += ' csc-max-width'; // Adding .csc-max-width for CSC tables
       }
 
-      // Check if we have a specific item for this age group.
-      let item = group[age];
-
-      // If there's no specific item for this age group or if the specific item is "NoRequirement"...
-      if (!item || item.ageRequirement === 'NoRequirement') {
-          // If there's a "NoRequirement" item, use it.
-          item = group['NoRequirement'];
-      }
-
-      // Now that we have the right item, determine the price.
-      let price;
-      if (item) {
-        // If there's a specific item for this age group, use its price
-        price = item.amountInCents === 0 ? 'Free' : `$${item.amountInCents / 100}`;
-      } else {
-        // If there's no specific item for this age group, try to find a "NoRequirement" item
-        const noRequirementItem = group['NoRequirement'];
-        price = noRequirementItem ? (noRequirementItem.amountInCents === 0 ? 'Free' : `$${noRequirementItem.amountInCents / 100}`) : 'N/A';
-      }
-
-      // Use additionalClasses to build the cell
       return `<div class="flex-cell price text-size-regular ${additionalClasses}">${price}</div>`;
-    }).join('');
+   }).join('');
 
     const firstCellClass = isFirstRow && !isLastRow ? 'start' : (isLastRow ? 'start rounded-bottom-left' : '');
 
     return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
   }).join('')}</div>`;
 
-	// Get the container for this table type
+  // Get the container for this table type
   let containerId = containers[tableName];
   if (containerId) {
     let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
@@ -205,22 +185,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const casual = [];
 
     for (let item of priceListData) {
-        if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && 
-            !item.requiresCommunityServicesCard &&
-            (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-            enrolled.push(item);
-        } else if (item.membershipRequirement === "ENROLLED" && 
-                   item.requiresCommunityServicesCard && 
-                   (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-            enrolledCsc.push(item);
-        } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
-            casual.push(item);
-        }
+     if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      enrolled.push(item);
+    } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      enrolledCsc.push(item);
+    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+      casual.push(item);
     }
-    
-    console.log(enrolled);
-    return { enrolled, enrolledCsc, casual };
   }
+
+  return { enrolled, enrolledCsc, casual };
+  };
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
@@ -239,7 +214,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   Object.entries(desiredLocationData).forEach(([locId, items]) => {
     const categorizedData = categorizePriceList(items);
-    console.log(categorizedData);
 
     if (categorizedData.enrolled.length) generateTable(locId, categorizedData.enrolled, "Enrolled");
     if (categorizedData.enrolledCsc.length) generateTable(locId, categorizedData.enrolledCsc, "Enrolled (CSC)");
