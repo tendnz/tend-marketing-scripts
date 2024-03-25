@@ -159,15 +159,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Check if we have a specific item for this age group.
       let item = group[age];
 
-      // If there's no specific item for this age group...
-      if (!item) {
-          // If it's "NoRequirement", directly use it.
-          if (age === 'NoRequirement') {
-              item = group['NoRequirement'];
-          } else {
-              // Otherwise, try to find an item for the current age group if available.
-              item = group[age];
-          }
+      // If there's no specific item for this age group or if the specific item is "NoRequirement"...
+      if (!item || item.ageRequirement === 'NoRequirement') {
+          // If there's a "NoRequirement" item, use it.
+          item = group['NoRequirement'];
       }
 
       // Now that we have the right item, determine the price.
