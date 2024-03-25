@@ -218,6 +218,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     
+    console.log(enrolled);
     return { enrolled, enrolledCsc, casual };
   }
 
