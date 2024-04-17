@@ -192,55 +192,58 @@ const categorizePriceList = (priceListData) => {
   const enrolled = [];
   const enrolledCsc = [];
   const casual = [];
-  const enrolledMap = {}; // To map enrolled items by their description and duration for fallback
-  const noRequirementMap = {}; // Map for NoRequirement items as fallback
+  const enrolledMap = {}; // Map for finding fallbacks within enrolled
+  const noReqEnrolledMap = {}; // Map for NoRequirement fallback for enrolled
 
-  // Categorize items and build maps for enrolled items and NoRequirement fallbacks
+  // Categorize items and build maps for fallbacks
   for (let item of priceListData) {
     const descKey = item.marketingDescription + item.marketingDuration;
 
-    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard &&
-        (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+    // Enroll non-CSC items and build NoRequirement map for fallback
+    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
       enrolled.push(item);
-      if (!enrolledMap[descKey]) {
-        enrolledMap[descKey] = item;
+      if (item.ageRequirement === "NoRequirement") {
+        if (!noReqEnrolledMap[descKey]) {
+          noReqEnrolledMap[descKey] = item; // Map NoRequirement items for enrolled
+        }
       }
-    } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard &&
-               (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      enrolledCsc.push(item);
-    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
-      casual.push(item);
+      if (!enrolledMap[descKey]) {
+        enrolledMap[descKey] = item; // Map all enrolled items for general fallback
+      }
     }
 
-    // Building NoRequirement fallback map
-    if (item.ageRequirement === "NoRequirement" && item.itemCategory === "RepeatPrescription") {
-      if (!noRequirementMap[descKey]) {
-        noRequirementMap[descKey] = item;
-      }
+    // Enroll CSC items
+    if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard) {
+      enrolledCsc.push(item);
+    }
+
+    // Casual items
+    if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+      casual.push(item);
     }
   }
 
-  // Add fallback CSC items from enrolled and handle RepeatPrescription fallback
+  // Fallback logic for CSC and specific age requirements in repeat prescriptions
   for (let item of priceListData) {
     const descKey = item.marketingDescription + item.marketingDuration;
-    
+
+    // Add fallback CSC items from enrolled when CSC item is not available
     if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard &&
-        (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") &&
         !enrolledCsc.some(eItem => eItem.marketingDescription === item.marketingDescription && eItem.marketingDuration === item.marketingDuration)) {
       if (enrolledMap[descKey]) {
         enrolledCsc.push({
           ...enrolledMap[descKey],
           requiresCommunityServicesCard: true,
-          amountInCents: item.amountInCents // Use the price from the CSC item
+          amountInCents: enrolledMap[descKey].amountInCents // Use the enrolled item price if CSC specific price not available
         });
       }
     }
 
-    // Handling N/A fallback for RepeatPrescription
+    // Fallback for RepeatPrescriptions with no specific age
     if (item.itemCategory === "RepeatPrescription" && item.ageRequirement === "N/A" && !enrolled.includes(item)) {
-      if (noRequirementMap[descKey]) {
+      if (noReqEnrolledMap[descKey]) {
         enrolled.push({
-          ...noRequirementMap[descKey]
+          ...noReqEnrolledMap[descKey]
         });
       }
     }
@@ -248,6 +251,7 @@ const categorizePriceList = (priceListData) => {
 
   return { enrolled, enrolledCsc, casual };
 };
+
 
 
   const locationGroupedPriceData = priceData.marketingPriceList
