@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const enrolledCsc = [];
     const casual = [];
 
-    for (let item of priceListData) {
+    /* for (let item of priceListData) {
     if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       enrolled.push(item);
     } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
@@ -210,9 +210,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
       casual.push(item);
     }
-  }
+  } */
 
-  /*  for (let item of priceListData) {
+  for (let item of priceListData) {
      if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       enrolled.push(item);
     } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
       casual.push(item);
     }
-  } */
+  }
 
   return { enrolled, enrolledCsc, casual };
   };
