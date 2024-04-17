@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     return { enrolled, enrolledCsc, casual };
-  };
+  });
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
