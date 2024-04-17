@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   };
 
-  const categorizePriceList = (priceListData) => {
+  /* const categorizePriceList = (priceListData) => {
     const enrolled = [];
     const enrolledCsc = [];
     const casual = [];
@@ -204,6 +204,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   return { enrolled, enrolledCsc, casual };
+  }; */
+
+  const categorizePriceList = (priceListData) => {
+    const enrolled = [];
+    const enrolledCsc = [];
+    const casual = []; // Renamed from otherServices to casual for clarity
+
+    for (let item of priceListData) {
+      const isEnrolled = item.membershipRequirement === "ENROLLED";
+      const isCSC = item.requiresCommunityServicesCard;
+      const isConsultationOrPrescription = (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription");
+      const isCasual = item.membershipRequirement === "CASUAL";
+
+      if (isEnrolled && isConsultationOrPrescription) {
+        if (item.ageRequirement === 'ChildUnder14') {
+          // Prioritize non-CSC items for children under 14
+          if (!isCSC) {
+            enrolled.unshift(item); // Adds to the front to ensure highest priority
+          } else {
+            enrolledCsc.push(item);
+          }
+        } else {
+          // Handle all other age groups
+          if (isCSC) {
+            enrolledCsc.push(item);
+          } else {
+            enrolled.push(item);
+          }
+        }
+      } else if (isCasual && isConsultationOrPrescription) {
+        casual.push(item); // Use for casual items
+      }
+    }
+
+    return { enrolled, enrolledCsc, casual };
   };
 
   const locationGroupedPriceData = priceData.marketingPriceList
