@@ -194,15 +194,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     const casual = [];
     
     const cscMap = {}; // To keep track of CSC items by age requirement
+    const descriptionMap = {}; // To keep track of items by marketingDescription
 
-    // First pass to categorize and build a map for quick CSC look-up
+    // First pass to categorize and build maps for quick look-up
     for (let item of priceListData) {
       if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation") {
+        enrolled.push(item);
+        // Map by description for fallback
+        if (!descriptionMap[item.marketingDescription]) {
+          descriptionMap[item.marketingDescription] = [];
+        }
+        descriptionMap[item.marketingDescription].push(item);
+
+        // Separate CSC items
         if (item.requiresCommunityServicesCard) {
           enrolledCsc.push(item);
           cscMap[item.ageRequirement] = item; // Map CSC items by age requirement
-        } else {
-          enrolled.push(item);
         }
       } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
         casual.push(item);
@@ -210,10 +217,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Second pass to add fallback logic for CSC items without specific age prices
-    for (let item of enrolled) {
-      if (item.ageRequirement && !cscMap[item.ageRequirement]) {
-        // If there is no CSC item for this age, use the enrolled item as a fallback
-        enrolledCsc.push({ ...item, requiresCommunityServicesCard: true });
+    for (let item of enrolledCsc) {
+      if (!item.ageRequirement || !cscMap[item.ageRequirement]) {
+        // Find a fallback item with the same description that doesn't require a CSC
+        const fallbackItem = descriptionMap[item.marketingDescription].find(descItem => !descItem.requiresCommunityServicesCard);
+        if (fallbackItem) {
+          // Create a new item based on fallbackItem but with CSC requirement
+          enrolledCsc.push({ ...fallbackItem, requiresCommunityServicesCard: true });
+        }
       }
     }
 
