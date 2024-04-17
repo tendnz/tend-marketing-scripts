@@ -174,18 +174,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
   }).join('')}</div>`;
 
-  // Get the container for this table type
-  let containerId = containers[tableName];
-  if (containerId) {
-    let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
-    if (containerElement) {
-      containerElement.innerHTML = table;
+    // Get the container for this table type
+    let containerId = containers[tableName];
+    if (containerId) {
+      let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
+      if (containerElement) {
+        containerElement.innerHTML = table;
+      } else {
+        console.warn(`Container with class ${containerId} not found.`);
+      }
     } else {
-      console.warn(`Container with class ${containerId} not found.`);
-    }
-  } else {
-   console.warn(`No container defined for table type: ${tableName}`);
-  }
+     console.warn(`No container defined for table type: ${tableName}`);
+    };
   };
 
   const categorizePriceList = (priceListData) => {
