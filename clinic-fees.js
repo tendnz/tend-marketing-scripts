@@ -192,61 +192,57 @@ const categorizePriceList = (priceListData) => {
   const enrolled = [];
   const enrolledCsc = [];
   const casual = [];
-  const enrolledMap = {}; // Map for finding fallbacks within enrolled
-  const noReqEnrolledMap = {}; // Map for NoRequirement fallback for enrolled
+  const enrolledMap = {};
+  const cscMap = {};
 
-  // Categorize items and build maps for fallbacks
-  for (let item of priceListData) {
-    const descKey = item.marketingDescription + item.marketingDuration;
-
-    // Enroll non-CSC items and build NoRequirement map for fallback
-    if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") && !item.requiresCommunityServicesCard) {
-      enrolled.push(item);
-      if (!enrolledMap[descKey] || item.ageRequirement === "NoRequirement") {
-        enrolledMap[descKey] = item; // Map all enrolled items for general fallback
-      }
-      if (item.ageRequirement === "NoRequirement") {
-        noReqEnrolledMap[descKey] = item; // Map NoRequirement items for enrolled
+  // Build maps for enrolled and CSC
+  priceListData.forEach(item => {
+    if (item.itemCategory === "RepeatPrescription" && !item.requiresCommunityServicesCard) {
+      const key = item.marketingDescription + item.marketingDuration;
+      enrolledMap[item.ageRequirement || 'NoRequirement'] = item;
+      if (!item.requiresCommunityServicesCard) {
+        enrolled.push(item);
       }
     }
-
-    // Enroll CSC items
-    if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard) {
+    if (item.requiresCommunityServicesCard) {
+      const cscKey = item.marketingDescription + item.marketingDuration + item.ageRequirement;
+      cscMap[cscKey] = item;
       enrolledCsc.push(item);
     }
-
-    // Casual items
-    if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+    if (item.membershipRequirement === "CASUAL") {
       casual.push(item);
     }
-  }
+  });
 
-  // Fallback logic for CSC and specific age requirements in repeat prescriptions
-  for (let item of enrolledCsc) {
-    const descKey = item.marketingDescription + item.marketingDuration;
-    // Ensure there is a fallback CSC item if specific CSC item is not available
-    if (!enrolledCsc.some(eItem => eItem.marketingDescription === item.marketingDescription && eItem.marketingDuration === item.marketingDuration && eItem.ageRequirement === item.ageRequirement)) {
-      if (enrolledMap[descKey]) {
-        enrolledCsc.push({
-          ...enrolledMap[descKey],
-          requiresCommunityServicesCard: true,
-          amountInCents: enrolledMap[descKey].amountInCents // Use the enrolled item price if CSC specific price not available
-        });
+  // Fallback for enrolled items without a specific age or CSC
+  Object.keys(enrolledMap).forEach(age => {
+    if (age !== 'NoRequirement' && !enrolledMap[age]) {
+      enrolled.push({
+        ...enrolledMap['NoRequirement'],
+        ageRequirement: age
+      });
+    }
+  });
+
+  // Fallback for CSC items
+  priceListData.forEach(item => {
+    if (item.itemCategory === "RepeatPrescription" && item.requiresCommunityServicesCard) {
+      const cscKey = item.marketingDescription + item.marketingDuration + item.ageRequirement;
+      if (!cscMap[cscKey]) {
+        if (enrolledMap[item.ageRequirement]) {
+          enrolledCsc.push({
+            ...enrolledMap[item.ageRequirement],
+            requiresCommunityServicesCard: true
+          });
+        } else {
+          enrolledCsc.push({
+            ...enrolledMap['NoRequirement'],
+            requiresCommunityServicesCard: true
+          });
+        }
       }
     }
-  }
-
-  // Additional fallbacks for RepeatPrescriptions with missing specific age or CSC data
-  for (let item of priceListData) {
-    const descKey = item.marketingDescription + item.marketingDuration;
-    if (item.itemCategory === "RepeatPrescription" && item.membershipRequirement === "ENROLLED" && (item.ageRequirement === "N/A" || !enrolled.includes(item))) {
-      if (noReqEnrolledMap[descKey]) {
-        enrolled.push({
-          ...noReqEnrolledMap[descKey]
-        });
-      }
-    }
-  }
+  });
 
   return { enrolled, enrolledCsc, casual };
 };
