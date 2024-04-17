@@ -197,7 +197,7 @@ const categorizePriceList = (priceListData) => {
 
   // Build maps for enrolled and CSC
   priceListData.forEach(item => {
-    if (item.itemCategory === "RepeatPrescription" && !item.requiresCommunityServicesCard) {
+    if ((item.itemCategory === "RepeatPrescription" || item.itemCategory === "Consultation") && !item.requiresCommunityServicesCard) {
       const key = item.marketingDescription + item.marketingDuration;
       enrolledMap[item.ageRequirement || 'NoRequirement'] = item;
       if (!item.requiresCommunityServicesCard) {
