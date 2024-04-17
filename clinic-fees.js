@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   };
 
-  /* const categorizePriceList = (priceListData) => {
+  const categorizePriceList = (priceListData) => {
     const enrolled = [];
     const enrolledCsc = [];
     const casual = [];
@@ -196,17 +196,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (let item of priceListData) {
      if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       enrolled.push(item);
-    } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      enrolledCsc.push(item);
+    } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      if (item.requiresCommunityServicesCard) {
+          enrolledCsc.push(item);
+        } else {
+          // Check if there's already a CSC item for this age group
+          const existingCscItem = enrolledCsc.find(x => x.ageRequirement === item.ageRequirement);
+          if (!existingCscItem) {
+            enrolledCsc.push(item);  // Use non-CSC item as fallback for CSC pricing
+          }
+          enrolled.push(item);
+        }
+      }
     } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
       casual.push(item);
     }
   }
 
   return { enrolled, enrolledCsc, casual };
-  }; */
+  };
 
-  const categorizePriceList = (priceListData) => {
+  /* const categorizePriceList = (priceListData) => {
     const enrolled = [];
     const enrolledCsc = [];
     const casual = []; // Renamed from otherServices to casual for clarity
@@ -239,7 +249,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     return { enrolled, enrolledCsc, casual };
-  };
+  }; */
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
