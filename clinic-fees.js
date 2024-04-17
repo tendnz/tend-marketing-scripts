@@ -189,19 +189,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const categorizePriceList = (priceListData) => {
-  const enrolled = [];
-  const enrolledCsc = [];
-  const casual = [];
-  
-  const cscMap = {}; // To keep track of CSC items by age requirement
+    const enrolled = [];
+    const enrolledCsc = [];
+    const casual = [];
 
-  // First pass to categorize and build a map for quick CSC look-up
-  for (let item of priceListData) {
-    if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation") {
+    for (let item of priceListData) {
+    if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      enrolled.push(item);
+    } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       if (item.requiresCommunityServicesCard) {
         enrolledCsc.push(item);
-        cscMap[item.ageRequirement] = item; // Map CSC items by age requirement
       } else {
+        // Check if there's already a CSC item for this age group
+        const existingCscItem = enrolledCsc.find(x => x.ageRequirement === item.ageRequirement);
+        if (!existingCscItem) {
+          enrolledCsc.push(item);  // Use non-CSC item as fallback for CSC pricing
+        }
         enrolled.push(item);
       }
     } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
@@ -209,16 +212,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Second pass to add fallback logic for CSC items without specific age prices
-  for (let item of enrolled) {
-    if (item.ageRequirement && !cscMap[item.ageRequirement]) {
-      // If there is no CSC item for this age, use the enrolled item as a fallback
-      enrolledCsc.push({ ...item, requiresCommunityServicesCard: true });
-    }
-  }
+  const categorizePriceList = (priceListData) => {
+    const enrolled = [];
+    const enrolledCsc = [];
+    const casual = [];
+    
+    const cscMap = {}; // To keep track of CSC items by age requirement
 
-  return { enrolled, enrolledCsc, casual };
-};
+    // First pass to categorize and build a map for quick CSC look-up
+    for (let item of priceListData) {
+      if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation") {
+        if (item.requiresCommunityServicesCard) {
+          enrolledCsc.push(item);
+          cscMap[item.ageRequirement] = item; // Map CSC items by age requirement
+        } else {
+          enrolled.push(item);
+        }
+      } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+        casual.push(item);
+      }
+    }
+
+    // Second pass to add fallback logic for CSC items without specific age prices
+    for (let item of enrolled) {
+      if (item.ageRequirement && !cscMap[item.ageRequirement]) {
+        // If there is no CSC item for this age, use the enrolled item as a fallback
+        enrolledCsc.push({ ...item, requiresCommunityServicesCard: true });
+      }
+    }
+
+    return { enrolled, enrolledCsc, casual };
+  };
 
   /*  for (let item of priceListData) {
      if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
@@ -229,9 +253,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       casual.push(item);
     }
   } */
-
-  return { enrolled, enrolledCsc, casual };
-  };
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
