@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // First pass to categorize and build maps for quick look-up
     for (let item of priceListData) {
-      if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation") {
+      if (item.membershipRequirement === "ENROLLED") {
         enrolled.push(item);
         // Map by description for fallback
         if (!descriptionMap[item.marketingDescription]) {
@@ -211,18 +211,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           enrolledCsc.push(item);
           cscMap[item.ageRequirement] = item; // Map CSC items by age requirement
         }
-      } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+      } else if (item.membershipRequirement === "CASUAL" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
         casual.push(item);
       }
     }
 
     // Second pass to add fallback logic for CSC items without specific age prices
-    for (let item of enrolledCsc) {
-      if (!item.ageRequirement || !cscMap[item.ageRequirement]) {
-        // Find a fallback item with the same description that doesn't require a CSC
-        const fallbackItem = descriptionMap[item.marketingDescription].find(descItem => !descItem.requiresCommunityServicesCard);
+    for (let item of enrolled) {
+      if (!cscMap[item.ageRequirement] && item.requiresCommunityServicesCard) {
+        // If there is no CSC item for this age, use the enrolled item as a fallback
+        const fallbackItem = descriptionMap[item.marketingDescription].find(descItem => !descItem.requiresCommunityServicesCard && descItem.itemCategory === item.itemCategory);
         if (fallbackItem) {
-          // Create a new item based on fallbackItem but with CSC requirement
           enrolledCsc.push({ ...fallbackItem, requiresCommunityServicesCard: true });
         }
       }
