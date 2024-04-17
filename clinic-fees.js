@@ -200,7 +200,7 @@ const categorizePriceList = (priceListData) => {
     const descKey = item.marketingDescription + item.marketingDuration;
 
     // Enroll non-CSC items and build NoRequirement map for fallback
-    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
+    if (item.membershipRequirement === "ENROLLED" && && item.itemCategory === "Consultation" && !item.requiresCommunityServicesCard) {
       enrolled.push(item);
       if (item.ageRequirement === "NoRequirement") {
         if (!noReqEnrolledMap[descKey]) {
