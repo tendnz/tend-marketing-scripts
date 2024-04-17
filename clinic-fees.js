@@ -194,10 +194,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const casual = [];
 
     for (let item of priceListData) {
-     if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      enrolled.push(item);
-    } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-      if (item.requiresCommunityServicesCard) {
+      if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+        enrolled.push(item);
+      } else if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") {
+        if (item.requiresCommunityServicesCard) {
           enrolledCsc.push(item);
         } else {
           // Check if there's already a CSC item for this age group
@@ -207,9 +207,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
           enrolled.push(item);
         }
+      } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+        casual.push(item);
       }
-    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
-      casual.push(item);
     }
   }
 
