@@ -204,7 +204,7 @@ const categorizePriceList = (priceListData) => {
     const ageKey = item.ageRequirement || 'NoRequirement';
 
     // Enrolled items
-    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
+    if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") && !item.requiresCommunityServicesCard) {
       enrolled.push(item);
       enrolledMap[ageKey] = item; // Map enrolled items by age requirement
     }
