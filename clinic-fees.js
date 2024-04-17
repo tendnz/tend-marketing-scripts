@@ -207,7 +207,7 @@ const categorizePriceList = (priceListData) => {
     } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard &&
                (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       enrolledCsc.push(item);
-    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Service") {
       casual.push(item);
     }
   }
