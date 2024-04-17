@@ -174,46 +174,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
   }).join('')}</div>`;
 
-    // Get the container for this table type
-    let containerId = containers[tableName];
-    if (containerId) {
-      let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
-      if (containerElement) {
-        containerElement.innerHTML = table;
-      } else {
-        console.warn(`Container with class ${containerId} not found.`);
-      }
+  // Get the container for this table type
+  let containerId = containers[tableName];
+  if (containerId) {
+    let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
+    if (containerElement) {
+      containerElement.innerHTML = table;
     } else {
-     console.warn(`No container defined for table type: ${tableName}`);
+      console.warn(`Container with class ${containerId} not found.`);
     }
+  } else {
+   console.warn(`No container defined for table type: ${tableName}`);
+  }
   };
 
-  const categorizePriceList = (priceListData) => {
-    const enrolled = [];
-    const enrolledCsc = [];
-    const casual = [];
+const categorizePriceList = (priceListData) => {
+  const enrolled = [];
+  const enrolledCsc = [];
+  const casual = [];
 
-    for (let item of priceListData) {
-      if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-        enrolled.push(item);
-      } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
-        if (item.requiresCommunityServicesCard) {
-          enrolledCsc.push(item);
-        } else {
-          // Check if there's already a CSC item for this age group
-          const existingCscItem = enrolledCsc.find(x => x.ageRequirement === item.ageRequirement);
-          if (!existingCscItem) {
-            enrolledCsc.push(item);  // Use non-CSC item as fallback for CSC pricing
-          }
-          enrolled.push(item);
+  for (let item of priceListData) {
+    if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      enrolled.push(item);
+    } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
+      if (item.requiresCommunityServicesCard) {
+        enrolledCsc.push(item);
+      } else {
+        // Check if there's already a CSC item for this age group
+        const existingCscItem = enrolledCsc.find(x => x.ageRequirement === item.ageRequirement);
+        if (!existingCscItem) {
+          enrolledCsc.push(item);  // Use non-CSC item as fallback for CSC pricing
         }
-      } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
-        casual.push(item);
+        enrolled.push(item);
       }
+    } else if (item.membershipRequirement === "CASUAL" && item.itemCategory === "Consultation") {
+      casual.push(item);
     }
+  }
 
   return { enrolled, enrolledCsc, casual };
-  };
+};
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
