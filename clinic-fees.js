@@ -174,18 +174,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<div class="flex-row ${rowClass}"><div class="flex-cell first ${firstCellClass}">${description} <span class="text-size-regular text-color-grey">${durationText}</span></div>${cells}</div>`;
   }).join('')}</div>`;
 
-    // Get the container for this table type
-    let containerId = containers[tableName];
-    if (containerId) {
-      let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
-      if (containerElement) {
-        containerElement.innerHTML = table;
-      } else {
-        console.warn(`Container with class ${containerId} not found.`);
-      }
+  // Get the container for this table type
+  let containerId = containers[tableName];
+  if (containerId) {
+    let containerElement = document.querySelector(`.clinics-pricing-wrapper .${containerId}`);
+    if (containerElement) {
+      containerElement.innerHTML = table;
     } else {
-     console.warn(`No container defined for table type: ${tableName}`);
-    };
+      console.warn(`Container with class ${containerId} not found.`);
+    }
+  } else {
+   console.warn(`No container defined for table type: ${tableName}`);
+  }
   };
 
   const categorizePriceList = (priceListData) => {
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    return { enrolled, enrolledCsc, casual };  // This return statement must be inside the function
+    return { enrolled, enrolledCsc, casual };
   };
 
   const locationGroupedPriceData = priceData.marketingPriceList
@@ -232,10 +232,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   Object.entries(desiredLocationData).forEach(([locId, items]) => {
     const categorizedData = categorizePriceList(items);
-    
-    console.log('Enrolled items:', categorizedData.enrolled);
-    console.log('CSC items:', categorizedData.enrolledCsc);
-    console.log('Casual items:', categorizedData.casual);
 
     if (categorizedData.enrolled.length) generateTable(locId, categorizedData.enrolled, "Enrolled");
     if (categorizedData.enrolledCsc.length) generateTable(locId, categorizedData.enrolledCsc, "Enrolled (CSC)");
