@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (let item of priceListData) {
       if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
         enrolled.push(item);
-      } else if (item.membershipRequirement === "ENROLLED" && item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") {
+      } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
         if (item.requiresCommunityServicesCard) {
           enrolledCsc.push(item);
         } else {
@@ -211,9 +211,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         casual.push(item);
       }
     }
-  }
 
-  return { enrolled, enrolledCsc, casual };
+    return { enrolled, enrolledCsc, casual };  // This return statement must be inside the function
   };
 
   const locationGroupedPriceData = priceData.marketingPriceList
