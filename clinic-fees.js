@@ -192,51 +192,45 @@ const categorizePriceList = (priceListData) => {
   const enrolled = [];
   const enrolledCsc = [];
   const casual = [];
+  const noRequirementEnrolledCscMap = {};
+  const enrolledMap = {}; // Map for finding fallbacks within enrolled
 
-  // Maps to hold fallbacks for different categories
-  const enrolledMap = {};
-  const cscMap = {};
-  const enrolledFallbackMap = {}; // This holds the fallback prices for CSC holders
-
-  // Build the maps for enrolled and CSC categories
+  // Categorize items and build maps for fallbacks
   priceListData.forEach(item => {
     const descKey = item.marketingDescription + (item.marketingDuration || '');
-    const ageKey = item.ageRequirement || 'NoRequirement';
 
-    // Enrolled items
-    if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") && !item.requiresCommunityServicesCard) {
+    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
       enrolled.push(item);
-      enrolledMap[ageKey] = item; // Map enrolled items by age requirement
+      // Map all enrolled items for general fallback
+      enrolledMap[item.ageRequirement] = item;
     }
 
-    // CSC items
     if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard) {
       enrolledCsc.push(item);
-      cscMap[ageKey] = item; // Map CSC items by age requirement
+      // Map NoRequirement CSC items for fallbacks
+      if (item.ageRequirement === "NoRequirement") {
+        noRequirementEnrolledCscMap[descKey] = item;
+      }
     }
 
-    // Casual items
     if (item.membershipRequirement === "CASUAL") {
       casual.push(item);
     }
-
-    // Special mapping for under 14 CSC fallbacks
-    if (item.ageRequirement === "ChildUnder14" && item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
-      enrolledFallbackMap['ChildUnder14'] = item; // Map fallback for under 14 CSC
-    }
   });
 
-  // Fallback logic for CSC table
-  if (!cscMap['ChildUnder14']) {
-    // If there's no specific CSC item for under 14, use the enrolled fallback
+  // Fallback logic for CSC under 14 years
+  const under14DescKey = enrolledMap["ChildUnder14"].marketingDescription + (enrolledMap["ChildUnder14"].marketingDuration || '');
+  if (!enrolledCsc.some(item => item.ageRequirement === "ChildUnder14")) {
     enrolledCsc.push({
-      ...enrolledFallbackMap['ChildUnder14'],
-      requiresCommunityServicesCard: true
+      ...enrolledMap["ChildUnder14"],
+      requiresCommunityServicesCard: true,
+      amountInCents: noRequirementEnrolledCscMap[under14DescKey]?.amountInCents || enrolledMap["ChildUnder14"].amountInCents
     });
   }
 
   return { enrolled, enrolledCsc, casual };
 };
+
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
