@@ -188,12 +188,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   };
 
-const categorizePriceList = (priceListData) => {
-  const enrolled = [];
-  const enrolledCsc = [];
-  const casual = [];
+  const categorizePriceList = (priceListData) => {
+    const enrolled = [];
+    const enrolledCsc = [];
+    const casual = [];
 
-  for (let item of priceListData) {
+    for (let item of priceListData) {
     if ((item.membershipRequirement === "ENROLLED" || item.membershipRequirement === "NO_REQUIREMENT") && !item.requiresCommunityServicesCard && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
       enrolled.push(item);
     } else if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription")) {
@@ -213,7 +213,7 @@ const categorizePriceList = (priceListData) => {
   }
 
   return { enrolled, enrolledCsc, casual };
-};
+  };
 
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
