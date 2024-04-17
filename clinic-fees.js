@@ -216,41 +216,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   return { enrolled, enrolledCsc, casual };
   };
 
-  /* const categorizePriceList = (priceListData) => {
-    const enrolled = [];
-    const enrolledCsc = [];
-    const casual = []; // Renamed from otherServices to casual for clarity
-
-    for (let item of priceListData) {
-      const isEnrolled = item.membershipRequirement === "ENROLLED";
-      const isCSC = item.requiresCommunityServicesCard;
-      const isConsultationOrPrescription = (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription");
-      const isCasual = item.membershipRequirement === "CASUAL";
-
-      if (isEnrolled && isConsultationOrPrescription) {
-        if (item.ageRequirement === 'ChildUnder14') {
-          // Prioritize non-CSC items for children under 14
-          if (!isCSC) {
-            enrolled.unshift(item); // Adds to the front to ensure highest priority
-          } else {
-            enrolledCsc.push(item);
-          }
-        } else {
-          // Handle all other age groups
-          if (isCSC) {
-            enrolledCsc.push(item);
-          } else {
-            enrolled.push(item);
-          }
-        }
-      } else if (isCasual && isConsultationOrPrescription) {
-        casual.push(item); // Use for casual items
-      }
-    }
-
-    return { enrolled, enrolledCsc, casual };
-  }; */
-
   const locationGroupedPriceData = priceData.marketingPriceList
   .reduce((acc, item) => {
     item.enrolmentLocationIds.forEach(locId => {
@@ -268,6 +233,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   Object.entries(desiredLocationData).forEach(([locId, items]) => {
     const categorizedData = categorizePriceList(items);
+    
+    console.log('Enrolled items:', categorizedData.enrolled);
+    console.log('CSC items:', categorizedData.enrolledCsc);
+    console.log('Casual items:', categorizedData.casual);
 
     if (categorizedData.enrolled.length) generateTable(locId, categorizedData.enrolled, "Enrolled");
     if (categorizedData.enrolledCsc.length) generateTable(locId, categorizedData.enrolledCsc, "Enrolled (CSC)");
