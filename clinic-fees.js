@@ -192,50 +192,55 @@ const categorizePriceList = (priceListData) => {
   const enrolled = [];
   const enrolledCsc = [];
   const casual = [];
+  const enrolledFallbackMap = {}; // This holds the non-CSC items as fallbacks for CSC items
+  const noReqFallbackMap = {}; // This holds the NoRequirement items as fallbacks for all age-specific items
 
-  // Maps to hold fallbacks for different categories
-  const enrolledMap = {};
-  const cscMap = {};
-  const enrolledFallbackMap = {}; // This holds the fallback prices for CSC holders
-
-  // Build the maps for enrolled and CSC categories
+  // First pass to categorize items and build fallback maps
   priceListData.forEach(item => {
     const descKey = item.marketingDescription + (item.marketingDuration || '');
-    const ageKey = item.ageRequirement || 'NoRequirement';
 
-    // Enrolled items
-    if (item.membershipRequirement === "ENROLLED" && (item.itemCategory === "Consultation" || item.itemCategory === "RepeatPrescription") && !item.requiresCommunityServicesCard) {
+    // Build fallback map for enrolled non-CSC items for every age, including NoRequirement
+    if (!item.requiresCommunityServicesCard && item.membershipRequirement === "ENROLLED") {
+      enrolledFallbackMap[descKey + item.ageRequirement] = item;
+
+      // Separately build NoRequirement fallback map
+      if (item.ageRequirement === 'NoRequirement') {
+        noReqFallbackMap[descKey] = item;
+      }
+    }
+
+    // Categorize into enrolled, CSC, and casual
+    if (item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
       enrolled.push(item);
-      enrolledMap[ageKey] = item; // Map enrolled items by age requirement
-    }
-
-    // CSC items
-    if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard) {
+    } else if (item.membershipRequirement === "ENROLLED" && item.requiresCommunityServicesCard) {
       enrolledCsc.push(item);
-      cscMap[ageKey] = item; // Map CSC items by age requirement
-    }
-
-    // Casual items
-    if (item.membershipRequirement === "CASUAL") {
+    } else if (item.membershipRequirement === "CASUAL") {
       casual.push(item);
-    }
-
-    // Special mapping for under 14 CSC fallbacks
-    if (item.ageRequirement === "ChildUnder14" && item.membershipRequirement === "ENROLLED" && !item.requiresCommunityServicesCard) {
-      enrolledFallbackMap['ChildUnder14'] = item; // Map fallback for under 14 CSC
     }
   });
 
-  // Fallback logic for CSC table
-  if (!cscMap['ChildUnder14']) {
-    // If there's no specific CSC item for under 14, use the enrolled fallback
-    enrolledCsc.push({
-      ...enrolledFallbackMap['ChildUnder14'],
-      requiresCommunityServicesCard: true
-    });
-  }
+  // Fallback logic for CSC table and enrolled repeat prescriptions
+  const finalEnrolledCsc = enrolledCsc.map(item => {
+    const descKey = item.marketingDescription + (item.marketingDuration || '');
+    const ageKey = item.ageRequirement || 'NoRequirement';
 
-  return { enrolled, enrolledCsc, casual };
+    // If CSC item with specific age is not found, fallback to non-CSC item with same age
+    if (item.requiresCommunityServicesCard && !enrolledFallbackMap[descKey + ageKey]) {
+      return enrolledFallbackMap[descKey + 'NoRequirement'] || item;
+    }
+    return item;
+  });
+
+  // Ensure repeat prescription items have no N/A values
+  const finalEnrolled = enrolled.map(item => {
+    if (item.itemCategory === "RepeatPrescription" && item.ageRequirement === 'N/A') {
+      const descKey = item.marketingDescription + (item.marketingDuration || '');
+      return noReqFallbackMap[descKey] || item;
+    }
+    return item;
+  });
+
+  return { enrolled: finalEnrolled, enrolledCsc: finalEnrolledCsc, casual };
 };
 
   const locationGroupedPriceData = priceData.marketingPriceList
