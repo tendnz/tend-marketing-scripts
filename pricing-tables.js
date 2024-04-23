@@ -1,19 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
   
-  const fetchData = async () => {
+  const apiURL = "https://api.example.com/pricing";
+  const axiosConfig = { headers: { 'Accept': 'application/json' } };
+
+  async function fetchData(url) {
     try {
-      const response = await fetch('data.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log("Data fetched successfully:", data);
-      return data;
+        const response = await axios.get(url, axiosConfig);
+        return response.data.data;
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      return null;
+        console.error("Error fetching data", error);
+        return null;
     }
-  };
+  }
 
   const filterCategoriesByType = (categories, type) => {
     return categories.filter(category => category.category === type);
