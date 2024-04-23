@@ -1,17 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   
-  const apiURL = "https://api.example.com/pricing";
-  const axiosConfig = { headers: { 'Accept': 'application/json' } };
+  import axios from 'axios';
 
-  async function fetchData(url) {
+  // fetchData function using Axios
+  const fetchData = async () => {
     try {
-        const response = await axios.get(url, axiosConfig);
-        return response.data.data;
+      const response = await axios.get('https://api.tend.nz/marketing/price-grid');
+      console.log("Data fetched successfully:", response.data);
+      return response.data;
     } catch (error) {
-        console.error("Error fetching data", error);
-        return null;
+      console.error("Failed to fetch data:", error);
+      return null;
     }
-  }
+  };
 
   const filterCategoriesByType = (categories, type) => {
     return categories.filter(category => category.category === type);
