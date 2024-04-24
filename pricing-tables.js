@@ -11,11 +11,16 @@ const fetchData = async () => {
 };
 
 const filterCategoriesByType = (categories, type) => {
-  return categories.filter(category => category.category === type);
-};
+    return categories.filter(category => category.category === type);
+  };
 
-const generateTable = (categories, ageMap) => {
-  let html = '<div class="flex-table">';
+const generateTable = (categories, ageMap, isCscTable = false, isEnrolled = false) => {
+  let tableClass = 'flex-table';
+  if (!isEnrolled) {
+    tableClass += ' width-auto';
+  }
+
+  let html = `<div class="${tableClass}">`;
 
   // Determine which age columns should be displayed
   const displayAges = {};
@@ -28,14 +33,17 @@ const generateTable = (categories, ageMap) => {
 
   // Header row
   html += '<div class="flex-row header">';
-  html += '<div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>';
+  let headerServiceCellClass = "flex-cell header-first heading-style-h6 text-color-purple";
+  if (isCscTable) headerServiceCellClass += " csc-max-width";
+  html += `<div class="${headerServiceCellClass}">Service</div>`;
   const ageKeys = Object.keys(ageMap).filter(ageKey => displayAges[ageKey]);
   ageKeys.forEach((ageKey, keyIndex) => {
-    let headerClass = "flex-cell header-age heading-style-h6 text-color-purple";
+    let headerCellClass = "flex-cell header-age heading-style-h6 text-color-purple";
+    if (isCscTable) headerCellClass += " csc-max-width";
     if (keyIndex === ageKeys.length - 1) {
-      headerClass += " rounded-top-right last";
+      headerCellClass += " rounded-top-right last";
     }
-    html += `<div class="${headerClass}">${ageMap[ageKey]}</div>`;
+    html += `<div class="${headerCellClass}">${ageMap[ageKey]}</div>`;
   });
   html += '</div>'; // Close header row
 
@@ -54,10 +62,8 @@ const generateTable = (categories, ageMap) => {
     ageKeys.forEach((ageKey, keyIndex) => {
       const priceInfo = category.prices.find(price => price.ageGroup === ageKey);
       let price = 'N/A';
-      if (priceInfo) {
-        price = priceInfo.priceInCents === 0 ? "Free" : `$${priceInfo.priceInCents / 100}`;
-      }
       let cellClass = "flex-cell price text-size-regular";
+      if (isCscTable) cellClass += " csc-max-width";
       if (keyIndex === 0) cellClass += " start";
       if (isLastRow) cellClass += " end";
       if (keyIndex === ageKeys.length - 1) {
@@ -65,6 +71,9 @@ const generateTable = (categories, ageMap) => {
         if (isLastRow) {
           cellClass += " rounded-bottom-right";
         }
+      }
+      if (priceInfo) {
+        price = priceInfo.priceInCents === 0 ? "Free" : `$${priceInfo.priceInCents / 100}`;
       }
       html += `<div class="${cellClass}">${price}</div>`;
     });
@@ -102,13 +111,14 @@ window.initializePricingTables = async (selectedLocationId) => {
       const servicesContainer = document.getElementById('servicesPricingContainer');
 
       if (enrolledContainer) {
-        enrolledContainer.innerHTML = generateTable(enrolledCategories, ageMap);
+        enrolledContainer.innerHTML = generateTable(enrolledCategories, ageMap, false, true);
       } else {
         console.log("Enrolled pricing container not found.");
       }
 
       if (cscContainer) {
-        cscContainer.innerHTML = generateTable(cscCategories, ageMap);
+      // Passing true as the third argument for the CSC table
+      cscContainer.innerHTML = generateTable(cscCategories, ageMap, true);
       } else {
         console.log("CSC pricing container not found.");
       }
