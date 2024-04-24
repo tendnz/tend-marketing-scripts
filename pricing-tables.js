@@ -34,7 +34,7 @@ const generateTable = (categories, ageMap, isCscTable = false, isEnrolled = fals
   // Header row
   html += '<div class="flex-row header">';
   let headerServiceCellClass = "flex-cell header-first heading-style-h6 text-color-purple";
-  if (isCscTable) headerServiceCellClass += " csc-max-width";
+  // Only apply csc-max-width to other header cells, not the service cell
   html += `<div class="${headerServiceCellClass}">Service</div>`;
   const ageKeys = Object.keys(ageMap).filter(ageKey => displayAges[ageKey]);
   ageKeys.forEach((ageKey, keyIndex) => {
