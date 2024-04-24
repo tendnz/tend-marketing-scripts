@@ -1,5 +1,3 @@
-// import axios from 'axios';
-
 // fetchData function using Axios
 const fetchData = async () => {
   try {
@@ -35,7 +33,7 @@ const generateTable = (categories, ageMap) => {
   ageKeys.forEach((ageKey, keyIndex) => {
     let headerClass = "flex-cell header-age heading-style-h6 text-color-purple";
     if (keyIndex === ageKeys.length - 1) {
-      headerClass += " rounded-top-right";
+      headerClass += " rounded-top-right last";
     }
     html += `<div class="${headerClass}">${ageMap[ageKey]}</div>`;
   });
