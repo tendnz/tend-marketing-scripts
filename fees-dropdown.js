@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
+
   // Asynchronously fetches data and handles errors
   const fetchData = async () => {
     try {
@@ -6,7 +7,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      const data = await response.json();
+      console.log("Data fetched successfully:", data);
+      return data;
     } catch (error) {
       console.error("Failed to fetch data:", error);
       return null;
@@ -39,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const dropdown = document.querySelector('.list-items');
   const dropdownButton = document.getElementById('dropdownButton'); // Ensures correct ID is used
 
-  // Iterates through sorted location data to populate the dropdown menu
   sortedLocations.forEach(location => {
     const formattedRegion = formatRegionName(location.region);
     const listItem = document.createElement('div');
