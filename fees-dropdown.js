@@ -3,13 +3,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Asynchronously fetches data and handles errors
   const fetchData = async () => {
     try {
-      const response = await fetch('data.json');
-      if (!response.ok) {
+      const response = await axios.get('https://api.tend.nz/marketing/price-grid');
+      if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      console.log("Data fetched successfully:", data);
-      return data;
+      console.log("Data fetched successfully:", response.data);
+      return response.data;
     } catch (error) {
       console.error("Failed to fetch data:", error);
       return null;
