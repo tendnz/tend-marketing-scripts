@@ -117,25 +117,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const servicesContainer = document.getElementById('servicesPricingContainer');
 
         if (enrolledContainer) {
-          enrolledContainer.insertAdjacentHTML('beforebegin', generateTable(enrolledCategories, ageMap, false, true));
+          enrolledContainer.insertAdjacentHTML('afterbegin', generateTable(enrolledCategories, ageMap, false, true));
         } else {
           console.log("Enrolled pricing container not found.");
         }
 
         if (cscContainer) {
-          cscContainer.insertAdjacentHTML('beforebegin', generateTable(cscCategories, ageMap, true));
+          cscContainer.insertAdjacentHTML('afterbegin', generateTable(cscCategories, ageMap, true));
         } else {
           console.log("CSC pricing container not found.");
         }
 
         if (casualContainer) {
-          casualContainer.insertAdjacentHTML('beforebegin', generateTable(casualCategories, ageMap));
+          casualContainer.insertAdjacentHTML('afterbegin', generateTable(casualCategories, ageMap));
         } else {
           console.log("Casual pricing container not found.");
         }
 
         if (servicesContainer) {
-          servicesContainer.insertAdjacentHTML('beforebegin', generateTable(servicesCategories, ageMap));
+          servicesContainer.insertAdjacentHTML('afterbegin', generateTable(servicesCategories, ageMap));
         } else {
           console.log("Services pricing container not found.");
         }
