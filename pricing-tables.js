@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   };
 
+  /*
   window.initializePricingTables = async (selectedLocationId) => {
     const rawData = await fetchData();
     if (rawData) {
@@ -137,6 +138,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (servicesContainer) {
           servicesContainer.innerHTML = generateTable(servicesCategories, ageMap);
+        } else {
+          console.log("Services pricing container not found.");
+        }
+
+      } else {
+        console.log("No data found for the specified location ID.");
+      }
+    } else {
+      console.log("No data received from fetch.");
+    }
+  };
+  */
+  window.initializePricingTables = async (selectedLocationId) => {
+    const rawData = await fetchData();
+    if (rawData) {
+      const locationData = rawData.data.find(location => location.locationId === selectedLocationId);
+      if (locationData) {
+        console.log("Found data for location:", locationData.name);
+        const enrolledCategories = filterCategoriesByType(locationData.categories, 'ENROLLED');
+        const cscCategories = filterCategoriesByType(locationData.categories, 'CSC');
+        const casualCategories = filterCategoriesByType(locationData.categories, 'CASUAL');
+        const servicesCategories = filterCategoriesByType(locationData.categories, 'SERVICES');
+
+        const ageMap = {
+          'ChildUnder14': 'Under 14 yrs',
+          'Youth14to17': '14-17 yrs',
+          'Adult18to24': '18-24 yrs',
+          'Adult25OrOver': '25+ yrs',
+          'Adult25to64': '25-64 yrs',
+          'Adult65OrOver': '65+ yrs',
+          'NoRequirement': 'All Ages'
+        };
+
+        const enrolledContainer = document.getElementById('enrolledPricingContainer');
+        const cscContainer = document.getElementById('cscPricingContainer');
+        const casualContainer = document.getElementById('casualPricingContainer');
+        const servicesContainer = document.getElementById('servicesPricingContainer');
+
+        if (enrolledContainer) {
+          enrolledContainer.insertAdjacentHTML('beforeend', generateTable(enrolledCategories, ageMap, false, true));
+        } else {
+          console.log("Enrolled pricing container not found.");
+        }
+
+        if (cscContainer) {
+          cscContainer.insertAdjacentHTML('beforeend', generateTable(cscCategories, ageMap, true));
+        } else {
+          console.log("CSC pricing container not found.");
+        }
+
+        if (casualContainer) {
+          casualContainer.insertAdjacentHTML('beforeend', generateTable(casualCategories, ageMap));
+        } else {
+          console.log("Casual pricing container not found.");
+        }
+
+        if (servicesContainer) {
+          servicesContainer.insertAdjacentHTML('beforeend', generateTable(servicesCategories, ageMap));
         } else {
           console.log("Services pricing container not found.");
         }
