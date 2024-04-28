@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
         if (priceInfo) {
-          price = priceInfo.priceInCents === 0 ? "Free" : `$${(priceInfo.priceInCents / 100).toFixed(2)}`;
+          price = priceInfo.priceInCents === 0 ? "Free" : (Number.isInteger(priceInfo.priceInCents / 100) ? `$${priceInfo.priceInCents / 100}` : `$${(priceInfo.priceInCents / 100).toFixed(2)}`);
         }
         html += `<div class="${cellClass}">${price}</div>`;
       });
