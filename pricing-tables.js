@@ -87,6 +87,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     html += '</div>'; // Close pricing table
+
+    // Add class based on number of cells in the header row
+    const headerCellsCount = document.querySelector('.flex-row.header').childElementCount;
+    html = html.replace('flex-table', `flex-table ${headerCellsCount}-col`);
+
     return html;
   };
 
