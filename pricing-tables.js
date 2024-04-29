@@ -117,25 +117,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const servicesContainer = document.getElementById('servicesPricingContainer');
 
         if (enrolledContainer) {
-          enrolledContainer.insertAdjacentHTML('afterbegin', generateTable(enrolledCategories, ageMap, false, true));
+          enrolledContainer.innerHTML = generateTable(enrolledCategories, ageMap, false, true);
         } else {
           console.log("Enrolled pricing container not found.");
         }
 
         if (cscContainer) {
-          cscContainer.insertAdjacentHTML('afterbegin', generateTable(cscCategories, ageMap, true));
+        // Passing true as the third argument for the CSC table
+        cscContainer.innerHTML = generateTable(cscCategories, ageMap, true);
         } else {
           console.log("CSC pricing container not found.");
         }
 
         if (casualContainer) {
-          casualContainer.insertAdjacentHTML('afterbegin', generateTable(casualCategories, ageMap));
+          casualContainer.innerHTML = generateTable(casualCategories, ageMap);
         } else {
           console.log("Casual pricing container not found.");
         }
 
         if (servicesContainer) {
-          servicesContainer.insertAdjacentHTML('afterbegin', generateTable(servicesCategories, ageMap));
+          servicesContainer.innerHTML = generateTable(servicesCategories, ageMap);
         } else {
           console.log("Services pricing container not found.");
         }
@@ -147,5 +148,4 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("No data received from fetch.");
     }
   };
-  
 });
