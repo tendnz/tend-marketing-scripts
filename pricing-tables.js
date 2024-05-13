@@ -110,11 +110,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const servicesCategories = filterCategoriesByType(locationData.categories, 'SERVICES');
 
         const ageMap = {
+          'Child4': 'Under 4 yrs',
           'ChildUnder14': 'Under 14 yrs',
           'Youth14to17': '14-17 yrs',
+          'Youth16to18': '16-18 yrs',
+          'Under18': 'Under 18 yrs',
           'Adult18to24': '18-24 yrs',
+          'Adult18OrOver': '18+ yrs',
           'Adult25OrOver': '25+ yrs',
           'Adult25to64': '25-64 yrs',
+          'Adult25to44': '25-44 yrs',
+          'Adult45to64': '45-64 yrs',
           'Adult65OrOver': '65+ yrs',
           'NoRequirement': 'All Ages'
         };

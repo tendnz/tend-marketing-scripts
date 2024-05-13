@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     fetchData(endpoints.Locations),
     fetchData(endpoints.EnrolmentLocations)
   ]);
-  
+
   // Correctly accessing nested data
   const locData = locDataResponse.data;
   const enrolmentLocData = enrolmentLocDataResponse.data;
@@ -38,14 +38,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     return acc;
   }, {});
 
+
   const ageMap = {
-   'ChildUnder14': 'Under 14 yrs',
-   'Youth14to17': '14-17 yrs', 
-   'Adult18to24': '18-24 yrs', 
-   'Adult25to64': '25-64 yrs',
-   'Adult25OrOver':'25+ yrs',
-   'Adult65OrOver': '65+ yrs', 
-   'NoRequirement': 'N/A'
+    'Child4': 'Under 4 yrs',
+    'ChildUnder14': 'Under 14 yrs',
+    'Youth14to17': '14-17 yrs',
+    'Youth16to18': '16-18 yrs',
+    'Under18': 'Under 18 yrs',
+    'Adult18to24': '18-24 yrs',
+    'Adult18OrOver': '18+ yrs',
+    'Adult25OrOver': '25+ yrs',
+    'Adult25to64': '25-64 yrs',
+    'Adult25to44': '25-44 yrs',
+    'Adult45to64': '45-64 yrs',
+    'Adult65OrOver': '65+ yrs',
+    'NoRequirement': 'N/A'
   };
 
   const containers = {
@@ -66,9 +73,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (isAgeSpecific) {
       const baseAgeGroups = ['ChildUnder14', 'Youth14to17', 'Adult18to24'];
       const allPossibleGroups = ['Adult25to64', 'Adult65OrOver', 'Adult25OrOver']; // Include all possible groups beyond base
-      
+
       // Filter out the groups based on item age requirements present
-      const relevantExtendedGroups = allPossibleGroups.filter(extGroup => 
+      const relevantExtendedGroups = allPossibleGroups.filter(extGroup =>
         items.some(item => item.ageRequirement === extGroup));
 
       // Special handling for 'Adult25OrOver'
@@ -105,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // For items with a specific age requirement, add/overwrite the item for that age group.
         acc[key] = { ...(acc[key] || {}), [item.ageRequirement]: item };
       }
-      
+
       return acc;
     }, {});
 
@@ -115,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let table = `<div class="flex-table ${widthAutoClass}">`;
 
-  // Header 
+  // Header
   table += `<div class="flex-row header">`;
   table += `<div class="flex-cell header-first heading-style-h6 text-color-purple">Service</div>`;
   table += `${availableGroups.map((age, index) => {
