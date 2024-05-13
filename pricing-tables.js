@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const servicesCategories = filterCategoriesByType(locationData.categories, 'SERVICES');
 
         const ageMap = {
-          'Child4': 'Under 4 yrs',
+          'Child4': '4 yrs',
           'ChildUnder14': 'Under 14 yrs',
           'Youth14to17': '14-17 yrs',
           'Youth16to18': '16-18 yrs',
