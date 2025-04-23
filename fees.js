@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // This is not used anymore
+
   const endpoints = {
     "Locations": "https://api.tend.nz/marketing/locations",
     "EnrolmentLocations": "https://api.tend.nz/marketing/enrolment-locations",
