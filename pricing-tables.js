@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Asynchronously fetches data and handles errors
   const fetchData = async () => {
     try {
-      const response = await axios.get('https://api.tend.nz/marketing/price-grid');
+      const response = await axios.get('https://api.tend.nz/marketing/price-grid?showAll=true&newFormat=true');
       // Check for a successful response status, otherwise throw an error
       if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const enrolledCategories = filterCategoriesByType(locationData.categories, 'ENROLLED');
         const cscCategories = filterCategoriesByType(locationData.categories, 'CSC');
         const casualCategories = filterCategoriesByType(locationData.categories, 'CASUAL');
+        const casualCscCategories = filterCategoriesByType(locationData.categories, 'CASUAL_CSC');
         const servicesCategories = filterCategoriesByType(locationData.categories, 'SERVICES');
 
         const ageMap = {
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const enrolledContainer = document.getElementById('enrolledPricingContainer');
         const cscContainer = document.getElementById('cscPricingContainer');
         const casualContainer = document.getElementById('casualPricingContainer');
+        const casualCscContainer = document.getElementById('casualCscPricingContainer');
         const servicesContainer = document.getElementById('servicesPricingContainer');
 
         if (enrolledContainer) {
@@ -148,6 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
           casualContainer.innerHTML = generateTable(casualCategories, ageMap);
         } else {
           console.log("Casual pricing container not found.");
+        }
+
+        if (casualCscContainer) {
+          casualCscContainer.innerHTML = generateTable(casualCscCategories, ageMap);
+        } else {
+          console.log("Casual CSC pricing container not found.");
         }
 
         if (servicesContainer) {

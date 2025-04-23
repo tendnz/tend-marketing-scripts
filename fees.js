@@ -116,6 +116,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         break;
       case 'Consultations (Casual)':
         containerId = 'pricingTablesContainerCasual';
+        isAgeSpecific = true;
+        break;
+      case 'Consultations (Casual CSC)':
+        containerId = 'pricingTablesContainerCasualCsc';
+        isAgeSpecific = true;
         break;
       case 'Consultations (CSC)':
         containerId = 'pricingTablesContainerCSC';
@@ -156,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return acc;
     }, {});
 
-    let isCSC = tableName === 'Consultations (CSC)';
+    let isCSC = tableName === 'Consultations (CSC)' || tableName === 'Consultations (Casual CSC)';
     const widthAutoClass = !isAgeSpecific || isCSC ? 'width-auto' : '';
 
     let table = `<div class="flex-table ${widthAutoClass}" data-location="${locId}">`;
@@ -170,7 +175,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       let displayAge;
       if (age === 'AllAges') {
         displayAge = 'All Ages'; // Direct handling for non-age-specific tables
-      } else if (tableName === 'Consultations (CSC)' && age === 'NoRequirement') {
+      } else if (isCSC && age === 'NoRequirement') {
         displayAge = '18+ yrs'; // Special case for CSC table with "NoRequirement"
       } else {
         displayAge = ageMap[age]; // Standard case using ageMap
@@ -244,10 +249,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const consultationItems = notCasualItems.filter(i => (i.itemCategory === "Consultation" || i.itemCategory === "RepeatPrescription") && i.requiresCommunityServicesCard === false && (i.membershipRequirement === "ENROLLED" || i.membershipRequirement === "NO_REQUIREMENT"));
     const serviceItems = notCasualItems.filter(i => i.itemCategory === "Service" && (i.membershipRequirement === "ENROLLED" || i.membershipRequirement === "NO_REQUIREMENT"));
     const casualItems = items.filter(i => i.membershipRequirement === "CASUAL" && i.itemCategory === "Consultation");
+    const casualCscItems = items.filter(i => i.membershipRequirement === "CASUAL_CSC" && i.itemCategory === "Consultation");
     const cscEnrolledItems = items.filter(i => (i.membershipRequirement === "ENROLLED" || i.itemCategory === "RepeatPrescription") && i.requiresCommunityServicesCard === true);
     if(consultationItems.length) generateTable(locId, consultationItems, "Consultations");
     if(serviceItems.length) generateTable(locId, serviceItems, "Services");
     if(casualItems.length) generateTable(locId, casualItems, "Consultations (Casual)");
+    if(casualCscItems.length) generateTable(locId, casualCscItems, "Consultations (Casual CSC)");
     if(cscEnrolledItems.length) generateTable(locId, cscEnrolledItems, "Consultations (CSC)");
   });
 
