@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Asynchronously fetches data and handles errors
   const fetchData = async () => {
     try {
-      const response = await axios.get('https://api.tend.nz/marketing/price-grid?newFormat=true');
+      const response = await axios.get('https://api.tend.nz/marketing/price-grid');
       // Check for a successful response status, otherwise throw an error
       if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
